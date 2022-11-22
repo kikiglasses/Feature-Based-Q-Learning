@@ -40,6 +40,38 @@ episodes = 10000
 steps = 300
 
 
+state_vector = [0,
+                0,
+                0,
+                0,
+                0,
+                0]
+
+def get_num_adj():
+    # return the number of passable adjacent tiles
+    pass
+
+def goal_dist():
+    # return the Manhattan distance from the goal
+    pass
+
+def goal_dire():
+    # return direction of goal (format tbd)
+    pass
+
+def haz_dist():
+    # return Manhattan distance of closest hazard
+    pass
+
+def num_haz():
+    # return number of active hazards
+    pass
+
+def num_unvis_activ():
+    # return number of activators yet to be visited
+    pass
+
+
 def init():
     for i in range(Map.x):
         for j in range(Map.y):
