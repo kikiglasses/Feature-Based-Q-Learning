@@ -49,26 +49,42 @@ state_vector = [0,
 
 def get_num_adj():
     # return the number of passable adjacent tiles
-    pass
+    n = 0
+    (curr_x, curr_y) = current
+    if Map.grid[curr_x+1][curr_y] == 0:
+        n += 1
+    if Map.grid[curr_x-1][curr_y] == 0:
+        n += 1
+    if Map.grid[curr_x][curr_y+1] == 0:
+        n += 1
+    if Map.grid[curr_x][curr_y-1] == 0:
+        n += 1
+    return n
+
 
 def goal_dist():
     # return the Manhattan distance from the goal
+    # make global goal location variable
     pass
 
 def goal_dire():
     # return direction of goal (format tbd)
+    # make global goal location variable
     pass
 
 def haz_dist():
     # return Manhattan distance of closest hazard
+    # will have to check current location of hazards
     pass
 
 def num_haz():
     # return number of active hazards
+    # global variable created on map creation
     pass
 
 def num_unvis_activ():
     # return number of activators yet to be visited
+    # global number of activators yet to be visited variable
     pass
 
 
