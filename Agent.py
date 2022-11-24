@@ -65,22 +65,39 @@ def get_num_adj():
 def goal_dist():
     # return the Manhattan distance from the goal
     # make global goal location variable
-    pass
+    (curr_x, curr_y) = current
+    (goal_x, goal_y) = goal
+    return goal_x - curr_x + goal_y - curr_y
 
-def goal_dire():
-    # return direction of goal (format tbd)
-    # make global goal location variable
-    pass
+#Removed goal_direction
+#Removed goal_direction
 
 def haz_dist():
-    # return Manhattan distance of closest hazard
-    # will have to check current location of hazards
-    pass
+    (curr_x, curr_y) = current
+    min_dist = -1
+    for hazard in pit :
+        (hazard_x, hazard_y) = hazard
+        temp = hazard_x - curr_x + hazard_y - curr_y
+        if (temp < min_dist or min_dist == -1):
+            min_dist = temp
+    return min_dist
+    
+
+
+    (curr_x, curr_y) = current
+    min_dist = -1
+    for hazard in pit :
+        (hazard_x, hazard_y) = hazard
+        temp = hazard_x - curr_x + hazard_y - curr_y
+        if (temp < min_dist or min_dist == -1):
+            min_dist = temp
+    return min_dist
+    
+
 
 def num_haz():
-    # return number of active hazards
-    # global variable created on map creation
-    pass
+    return len(pit)
+    return len(pit)
 
 def activ_dist():
     # return Manhattan distance of closest unactivated activator
