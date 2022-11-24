@@ -222,9 +222,9 @@ def visualize_grid():
     for (i, j, c, w) in specials:
         # board.create_rectangle(i*Width, j*Width, (i+1)*Width, (j+1)*Width, fill=c, width=1)
         if w == -1:
-            board.create_image(i*Width+35, j*Width+35, image=fire_pic)
+            board.create_image(i*Width+35, j*Width+35, image=hazard_pic)
         else:
-            board.create_image(i*Width+35, j*Width+35, image=diamond_pic)
+            board.create_image(i*Width+35, j*Width+35, image=goal_pic)
     for (i, j) in walls:
         # board.create_rectangle(i*Width, j*Width, (i+1)*Width, (j+1)*Width, fill="black", width=1)
         board.create_image(i*Width+35, j*Width+35, image=wall_pic)
