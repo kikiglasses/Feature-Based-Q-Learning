@@ -19,20 +19,21 @@ current = Map.start
 walls = Map.walls
 
 goal = Map.goal  # (Map.specials[1][0], Map.specials[1][1])
-pit = Map.pit  # [(Map.specials[0][0], Map.specials[0][1])]
+hazards = Map.hazards  # [(Map.specials[0][0], Map.specials[0][1])]
 print("Goal: ", goal)
-print("Hazard: ", pit)
+print("Hazard: ", hazards)
 print("Walls: ", walls)
 
 Q = {}
 discount = Map.discount
 print_states = Map.print_states
 
+### Reward Function
 alpha = 1
 score = 1
 move_reward = -0.04
 goal_reward = 1
-pit_reward = -1
+hazard_reward = -1
 move_pass = 0.8
 move_fail = 0.1
 move_action = [-1, 0, 1]
@@ -71,12 +72,11 @@ def goal_dist():
     return goal_x - curr_x + goal_y - curr_y
 
 #Removed goal_direction
-#Removed goal_direction
 
 def haz_dist():
     (curr_x, curr_y) = current
     min_dist = -1
-    for hazard in pit :
+    for hazard in hazards :
         (hazard_x, hazard_y) = hazard
         temp = hazard_x - curr_x + hazard_y - curr_y
         if (temp < min_dist or min_dist == -1):
@@ -84,8 +84,7 @@ def haz_dist():
     return min_dist
 
 def num_haz():
-    return len(pit)
-
+    return len(hazards)
 
 def activ_dist():
     # return Manhattan distance of closest unactivated activator
@@ -169,7 +168,7 @@ def move(action):
     elif current == goal:
         Map.restart = True
         print("**********************  Success score = ", score)
-    elif current in pit:
+    elif current in hazards:
         Map.restart = True
         print("**********************  Fail score = ", score)
 
