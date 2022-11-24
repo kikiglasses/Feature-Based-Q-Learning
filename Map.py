@@ -49,7 +49,7 @@ else:
     hazard_pic = ImageTk.PhotoImage(image=Image.open(path+'zombie.png'))
     agent_pic = ImageTk.PhotoImage(image=Image.open(path+'steve.png'))
     activ_pic = ImageTk.PhotoImage(image=Image.open(path+'lever.jpg'))
-    deact_pic = ImageTk.PhotoImage(image=Image.open(path+'piston.jpg'))
+    deact_pic = ImageTk.PhotoImage(image=Image.open(path+'trapdoor.jpg'))
 
     board = Canvas(master, width=x*Width, height=y*Width)
     start_count = 0
@@ -224,7 +224,6 @@ def restart_game():
     player = (0, y-1)
     score = 1
     restart = False
-    # board.coords(robot, start[0]*Width+Width*4/10, start[1]*Width+Width*4/10, start[0]*Width+Width*6/10, start[1]*Width+Width*6/10)
     board.coords(robot, start[0]*Width+35, start[1]*Width+35)
 
 

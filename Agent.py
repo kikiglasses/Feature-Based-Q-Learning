@@ -162,7 +162,7 @@ def move(action):
         current = (curr_x-1 if curr_x-1 >= 0 else curr_x, curr_y)
     # otherwise waits
 
-    # check for goal or pit
+    # check for goal or hazard
     if current in walls:
         current = s
     elif current == goal:
