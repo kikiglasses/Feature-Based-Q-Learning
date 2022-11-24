@@ -82,6 +82,11 @@ def num_haz():
     # global variable created on map creation
     pass
 
+def activ_dist():
+    # return Manhattan distance of closest unactivated activator
+    # will have to check current location of activators
+    pass
+
 def num_unvis_activ():
     # return number of activators yet to be visited
     # global number of activators yet to be visited variable

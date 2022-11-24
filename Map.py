@@ -44,10 +44,12 @@ else:
     x = int(x_str)
     (x, y) = (x, x)
     path = os.getcwd() + "/images/"
-    wall_pic = ImageTk.PhotoImage(image=Image.open(path+'wall.png'))
-    diamond_pic = ImageTk.PhotoImage(image=Image.open(path+'diamond.png'))
-    fire_pic = ImageTk.PhotoImage(image=Image.open(path+'monster.png'))
-    robot_pic = ImageTk.PhotoImage(image=Image.open(path+'robot.png'))
+    wall_pic = ImageTk.PhotoImage(image=Image.open(path+'brick.png'))
+    goal_pic = ImageTk.PhotoImage(image=Image.open(path+'diamond.png'))
+    hazard_pic = ImageTk.PhotoImage(image=Image.open(path+'zombie.png'))
+    agent_pic = ImageTk.PhotoImage(image=Image.open(path+'steve.png'))
+    activ_pic = ImageTk.PhotoImage(image=Image.open(path+'lever.jpg'))
+    deact_pic = ImageTk.PhotoImage(image=Image.open(path+'piston.jpg'))
 
     board = Canvas(master, width=x*Width, height=y*Width)
     start_count = 0
@@ -65,10 +67,21 @@ else:
     var = StringVar(master)
     var.set("Select item")
 
-    option = OptionMenu(master, var, "start", "walls", "goal", "monster")
+    option = OptionMenu(master, var, "start", "walls", "goal", "hazard", "activator", "deactivatable")
     option.pack()
 
     robot = 0
+
+
+    '''
+    0 = empty
+    1 = wall
+    2 = start
+    3 = goal
+    4 = hazard
+    5 = activator
+    6 = deactivatable
+    '''
 
     def create_item(event):
         global robot, start_count, goal_count
@@ -80,18 +93,26 @@ else:
                 grid[y][x] = 1
             elif var.get() == "start":
                 item_grid[y][x] = board.create_image(
-                    x*Width+35, y*Width+35, image=robot_pic)
+                    x*Width+35, y*Width+35, image=agent_pic)
                 grid[y][x] = 2
                 start_count += 1
             elif var.get() == "goal":
                 item_grid[y][x] = board.create_image(
-                    x*Width+35, y*Width+35, image=diamond_pic)
+                    x*Width+35, y*Width+35, image=goal_pic)
                 grid[y][x] = 3
                 goal_count += 1
-            elif var.get() == "monster":
+            elif var.get() == "hazard":
                 item_grid[y][x] = board.create_image(
-                    x*Width+35, y*Width+35, image=fire_pic)
+                    x*Width+35, y*Width+35, image=hazard_pic)
                 grid[y][x] = 4
+            elif var.get() == "activator":
+                item_grid[y][x] = board.create_image(
+                    x*Width+35, y*Width+35, image=activ_pic)
+                grid[y][x] = 5
+            elif var.get() == "deactivatable":
+                item_grid[y][x] = board.create_image(
+                    x*Width+35, y*Width+35, image=deact_pic)
+                grid[y][x] = 6
 
     board.bind('<Button-1>', create_item)
 
