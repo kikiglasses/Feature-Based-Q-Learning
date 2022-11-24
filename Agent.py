@@ -70,6 +70,7 @@ def goal_dist():
     return goal_x - curr_x + goal_y - curr_y
 
 #Removed goal_direction
+#Removed goal_direction
 
 def haz_dist():
     (curr_x, curr_y) = current
@@ -83,7 +84,19 @@ def haz_dist():
     
 
 
+    (curr_x, curr_y) = current
+    min_dist = -1
+    for hazard in pit :
+        (hazard_x, hazard_y) = hazard
+        temp = hazard_x - curr_x + hazard_y - curr_y
+        if (temp < min_dist or min_dist == -1):
+            min_dist = temp
+    return min_dist
+    
+
+
 def num_haz():
+    return len(pit)
     return len(pit)
 
 def num_unvis_activ():
