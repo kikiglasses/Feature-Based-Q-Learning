@@ -169,12 +169,6 @@ text_objects = {}
 flag = True
 restart = False
 
-path = os.getcwd() + "/images/"
-wall_pic = ImageTk.PhotoImage(image=Image.open(path+'wall.png'))
-diamond_pic = ImageTk.PhotoImage(image=Image.open(path+'diamond.png'))
-fire_pic = ImageTk.PhotoImage(image=Image.open(path+'monster.png'))
-robot_pic = ImageTk.PhotoImage(image=Image.open(path+'robot.png'))
-
 def visualize_grid():
     global specials, walls, Width, x, y, player
     for i in range(x):

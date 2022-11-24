@@ -17,6 +17,7 @@ states = []
 # start = Map.start # (0, Map.y - 1)
 current = Map.start
 walls = Map.walls
+
 goal = Map.goal  # (Map.specials[1][0], Map.specials[1][1])
 pit = Map.pit  # [(Map.specials[0][0], Map.specials[0][1])]
 print("Goal: ", goal)
@@ -81,23 +82,10 @@ def haz_dist():
         if (temp < min_dist or min_dist == -1):
             min_dist = temp
     return min_dist
-    
-
-
-    (curr_x, curr_y) = current
-    min_dist = -1
-    for hazard in pit :
-        (hazard_x, hazard_y) = hazard
-        temp = hazard_x - curr_x + hazard_y - curr_y
-        if (temp < min_dist or min_dist == -1):
-            min_dist = temp
-    return min_dist
-    
-
 
 def num_haz():
     return len(pit)
-    return len(pit)
+
 
 def activ_dist():
     # return Manhattan distance of closest unactivated activator
@@ -184,6 +172,7 @@ def move(action):
     elif current in pit:
         Map.restart = True
         print("**********************  Fail score = ", score)
+
 
     Map.move_bot(current[0], current[1])
     # r = move_reward
