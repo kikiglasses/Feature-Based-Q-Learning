@@ -194,6 +194,147 @@ def visualize_grid():
         # board.create_rectangle(i*Width, j*Width, (i+1)*Width, (j+1)*Width, fill="black", width=1)
         board.create_image(i*Width+35, j*Width+35, image=wall_pic)
 
+def set_color(state, action, val):
+    global cell_score_min, cell_score_max
+    triangle = tri_objects[state][action]
+    text = text_objects[state][action]
+    green_dec = int(min(255, max(0, (val - cell_score_min) *
+                    255.0 / (cell_score_max - cell_score_min))))
+    red = hex(255-green_dec)[2:]
+    green = hex(green_dec)[2:]
+    if len(green) == 1:
+        green += "0"
+    if len(red) == 1:
+        red += "0"
+    color = "#" + red + green + "00"
+    board.itemconfigure(triangle, fill=color)
+    board.itemconfigure(text, text=str(format(val, '.2f')), fill="black")
+
+
+def move_bot(new_x, new_y):
+    global player, x, y, score, walk_reward, robot, restart
+
+    if (new_x >= 0) and (new_x < x) and (new_y >= 0) and (new_y < y) and not ((new_x, new_y) in walls):
+        board.coords(robot, new_x*Width+35, new_y*Width+35)
+        player = (new_x, new_y)
+
+
+def restart_game():
+    global player, score, robot, restart
+    player = (0, y-1)
+    score = 1
+    restart = False
+    # board.coords(robot, start[0]*Width+Width*4/10, start[1]*Width+Width*4/10, start[0]*Width+Width*6/10, start[1]*Width+Width*6/10)
+    board.coords(robot, start[0]*Width+35, start[1]*Width+35)
+
+
+visualize_grid()
+robot = board.create_image(
+    start[0]*Width+35, start[1]*Width+35, image=robot_pic)
+
+board.pack(side=LEFT)
+
+################# Control widgets ##################
+panel = Frame(master)
+panel.pack(side=RIGHT)
+Label(text="Controls\n", font="Verdana 12 bold").pack()
+
+# Play/Pause Toggle
+q1frame = Frame(master)
+q1frame.pack()
+b1 = Button(text="Play / Pause")
+
+def printName(event):
+    global flag
+    flag = not flag
+
+b1.bind("<Button-1>", printName)
+b1.pack()
+
+#   Sliders for speed and Epsilon
+q3frame = Frame(master)
+q3frame.pack()
+w1 = Scale(q3frame, from_=0, to=50, orient=HORIZONTAL)
+w1.pack(side=LEFT)
+Label(text="Speed").pack()
+
+################# Q Learning widgets ##################
+separator = Frame(height=2, bd=1, relief=SUNKEN)
+separator.pack(fill=X, padx=2, pady=2)
+
+Label(text="Q Learning Parameters\n", font="Verdana 12 bold").pack()
+
+#   Discount text entry and button
+qframe = Frame(master)
+qframe.pack()
+e = Entry(qframe, width=5)
+e.pack(side=LEFT)
+e.insert(0, "0.8")
+
+discount = 0.8
+
+def getDiscount(event):
+    global discount
+    discount = float(e.get())
+    print(discount)
+
+
+b3 = Button(qframe, text="Discount")
+b3.bind("<Button-1>", getDiscount)
+b3.pack(side=LEFT)
+
+
+#  Change start panel
+q2frame = Frame(master)
+q2frame.pack()
+
+
+def setStart(event):
+    global start
+    new_start = (int(x_entry.get()), int(y_entry.get()))
+    if new_start not in walls:
+        start = new_start
+
+b4 = Button(q2frame, text="Change Start")
+b4.bind("<Button-1>", setStart)
+
+x_entry = Entry(q2frame, width=4)
+x_entry.pack(side=LEFT)
+x_entry.insert(0, str(start[0]))
+y_entry = Entry(q2frame, width=4)
+y_entry.pack(side=LEFT)
+y_entry.insert(0, str(start[1]))
+
+b4.pack(side=LEFT)
+Label(text="").pack()
+
+
+# Exploration bar
+q4frame = Frame(master)
+q4frame.pack()
+w2 = Scale(q4frame, from_=0.0, to=0.9, orient=HORIZONTAL, resolution=0.1)
+w2.set(0.1)
+w2.pack()
+Label(text="Exploration (eps)").pack()
+Label(text="").pack()
+
+# Print states toggle
+q5frame = Frame(master)
+q5frame.pack()
+
+def printStates(event):
+    global print_states
+    
+    if print_states:
+        print_states = False
+    else:
+        print_states = True
+
+b5 = Button(q5frame, text="Toggle Print States")
+b5.bind("<Button-1>", printStates)
+b5.pack(side=LEFT)
+Label(text="").pack()
+
 def begin():
     global flag
     master.mainloop()
