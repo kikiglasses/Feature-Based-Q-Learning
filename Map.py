@@ -147,8 +147,8 @@ walls = []
 start = ()
 specials = []
 hazards = []
-activs = []
-deactivs = []
+activs = {}
+deactivs = {}
 
 for i in range(y):
     for j in range(x):
@@ -162,8 +162,10 @@ for i in range(y):
         if grid[i][j] == 4:
             specials.append((j, i, "red", -1))
             hazards.append((j, i))
-            # Add activators and deactivators
-
+        if str(grid[i][j]).startswith("5"): # (Channel 1 for testing) 
+            activs["1"].append(j,i)
+        if str(grid[i][j]).startswith("6"):
+            deactivs["1"].append(j,i)
 
 player = start
 tri_objects = {}

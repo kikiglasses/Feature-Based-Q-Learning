@@ -19,9 +19,7 @@ current = Map.start
 walls = Map.walls
 
 goal = Map.goal  # (Map.specials[1][0], Map.specials[1][1])
-hazards = Map.hazards  # [(Map.specials[0][0], Map.specials[0][1])]
 print("Goal: ", goal)
-print("Hazard: ", hazards)
 print("Walls: ", walls)
 
 Q = {}
@@ -168,10 +166,20 @@ def move(action):
     elif current == goal:
         Map.restart = True
         print("**********************  Success score = ", score)
-    elif current in hazards:
+    elif current in Map.hazards:
         Map.restart = True
         print("**********************  Fail score = ", score)
-
+    for k,v in Map.activs.items() :# k = key (channel of activator), v = array of locations (x,y) for channel
+        if current in v : #If current in activators
+            for i in v: # Remove all activators with channel k
+                Map.grid[i[0]][i[1]] = 0
+            Map.activs.pop(k)
+            for i in Map.deactivs[k]: # Remove all deactivatables with channel k
+                Map.grid[i[0]][i[1]] = 0
+            Map.deactivs.pop(k)
+    for k,v in Map.deactivs.items() :
+        if current in v:
+            current = s
 
     Map.move_bot(current[0], current[1])
     # r = move_reward
