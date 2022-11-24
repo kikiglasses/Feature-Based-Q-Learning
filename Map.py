@@ -146,7 +146,9 @@ print(x, y)
 walls = []
 start = ()
 specials = []
-pit = []
+hazards = []
+activs = []
+deactivs = []
 
 for i in range(y):
     for j in range(x):
@@ -159,7 +161,7 @@ for i in range(y):
             goal = (j, i)
         if grid[i][j] == 4:
             specials.append((j, i, "red", -1))
-            pit.append((j, i))
+            hazards.append((j, i))
             # Add activators and deactivators
 
 
