@@ -67,16 +67,17 @@ def goal_dist():
     # make global goal location variable
     (curr_x, curr_y) = current
     (goal_x, goal_y) = goal
-    return goal_x - curr_x + goal_y - curr_y
+    return abs(goal_x - curr_x) + abs(goal_y - curr_y)
 
 #Removed goal_direction
 
 def haz_dist():
+    # return the Manhattan distance from the nearest hazard
     (curr_x, curr_y) = current
     min_dist = -1
     for hazard in Map.hazards :
         (hazard_x, hazard_y) = hazard
-        temp = hazard_x - curr_x + hazard_y - curr_y
+        temp = abs(hazard_x - curr_x) + abs(hazard_y - curr_y)
         if (temp < min_dist or min_dist == -1):
             min_dist = temp
     return min_dist
@@ -86,13 +87,18 @@ def num_haz():
 
 def activ_dist():
     # return Manhattan distance of closest unactivated activator
-    # will have to check current location of activators
-    pass
+    (curr_x, curr_y) = current
+    min_dist = -1
+    for activ in Map.activs :
+        (activ_x, activ_y) = activ
+        temp = abs(activ_x - curr_x) + abs(activ_y - curr_y)
+        if (temp < min_dist or min_dist == -1):
+            min_dist = temp
+    return min_dist
 
-def num_unvis_activ():
-    # return number of activators yet to be visited
-    # global number of activators yet to be visited variable
-    pass
+def num_unact_channels():      ### slight change from initial proposal
+    # return number of channels yet to be activated
+    return(len(Map.activs.keys()))
 
 
 def init():
