@@ -162,6 +162,7 @@ for i in range(y):
         if grid[i][j] == 4:
             specials.append((j, i, "red", -1))
             hazards.append((j, i))
+        #TODO Capability of reading channel from file
         if str(grid[i][j]).startswith("5"): # (Channel 1 for testing) 
             activs["1"].append(j,i)
         if str(grid[i][j]).startswith("6"):
@@ -179,21 +180,12 @@ def visualize_grid():
         for j in range(y):
             board.create_rectangle(
                 i*Width, j*Width, (i+1)*Width, (j+1)*Width, fill="white", width=1)
-            # temp = {}
-            # temp_val = {}
-            # for action in actions:
-            #     (temp[action], temp_val[action]
-            #      ) = create_triangle(i, j, action)
-            # tri_objects[(i, j)] = temp
-            # text_objects[(i, j)] = temp_val
     for (i, j, c, w) in specials:
-        # board.create_rectangle(i*Width, j*Width, (i+1)*Width, (j+1)*Width, fill=c, width=1)
         if w == -1:
             board.create_image(i*Width+35, j*Width+35, image=hazard_pic)
         else:
             board.create_image(i*Width+35, j*Width+35, image=goal_pic)
     for (i, j) in walls:
-        # board.create_rectangle(i*Width, j*Width, (i+1)*Width, (j+1)*Width, fill="black", width=1)
         board.create_image(i*Width+35, j*Width+35, image=wall_pic)
 
 def set_color(state, action, val):
@@ -231,7 +223,7 @@ def restart_game():
 
 visualize_grid()
 robot = board.create_image(
-    start[0]*Width+35, start[1]*Width+35, image=robot_pic)
+    start[0]*Width+35, start[1]*Width+35, image=agent_pic)
 
 board.pack(side=LEFT)
 
