@@ -40,8 +40,7 @@ if not result:
     ins = open(filename, "r")
     for line in ins:
         number_strings = line.split()
-        numbers = [int(n) for n in number_strings]
-        grid.append(numbers)
+        grid.append(number_strings)
     (x, y) = (len(grid[0]), len(grid))
     board = Canvas(master, width=x*Width, height=y*Width)
 else:
@@ -92,29 +91,29 @@ else:
             if var.get() == "walls":
                 item_grid[y][x] = board.create_image(
                     x*Width+35, y*Width+35, image=wall_pic)
-                grid[y][x] = 1
+                grid[y][x] = '1'
             elif var.get() == "start":
                 item_grid[y][x] = board.create_image(
                     x*Width+35, y*Width+35, image=agent_pic)
-                grid[y][x] = 2
+                grid[y][x] = '2'
                 start_count += 1
             elif var.get() == "goal":
                 item_grid[y][x] = board.create_image(
                     x*Width+35, y*Width+35, image=goal_pic)
-                grid[y][x] = 3
+                grid[y][x] = '3'
                 goal_count += 1
             elif var.get() == "hazard":
                 item_grid[y][x] = board.create_image(
                     x*Width+35, y*Width+35, image=hazard_pic)
-                grid[y][x] = 4
+                grid[y][x] = '4'
             elif var.get() == "activator":
                 item_grid[y][x] = board.create_image(
                     x*Width+35, y*Width+35, image=activ_pic)
-                grid[y][x] = 5
+                grid[y][x] = '5'
             elif var.get() == "deactivatable":
                 item_grid[y][x] = board.create_image(
                     x*Width+35, y*Width+35, image=deact_pic)
-                grid[y][x] = 6
+                grid[y][x] = '6'
 
     board.bind('<Button-1>', create_item)
 
@@ -124,7 +123,7 @@ else:
         if item_grid[y][x] != 0:
             board.delete(item_grid[y][x])
             item_grid[y][x] = 0
-            grid[y][x] = 0
+            grid[y][x] = '0'
             if var.get == "start":
                 start_count -= 1
             elif var.get() == "goal":
@@ -154,21 +153,21 @@ deactivs = {}
 
 for i in range(y):
     for j in range(x):
-        if grid[i][j] == 1:
+        if grid[i][j] == "1":
             walls.append((j, i))
-        if grid[i][j] == 2:
+        if grid[i][j] == "2":
             start = (j, i)
-        if grid[i][j] == 3:
+        if grid[i][j] == "3":
             specials.append((j, i, "green", 1))
             goal = (j, i)
-        if grid[i][j] == 4:
+        if grid[i][j] == "4":
             specials.append((j, i, "red", -1))
             hazards.append((j, i))
-        channel = re.search('5\((.*)\)', grid[i][j]) # Gets 'x' from '5(x)'
-        if result:
+        channel = re.search('5\((.*)\)',    grid[i][j]) # Gets 'x' from '5(x)'
+        if channel:
             activs[channel.group(1)].append(j,i)
         channel = re.search('6\((.*)\)', grid[i][j])  # Gets 'x' from '6(x)'
-        if result:
+        if channel:
             deactivs[channel.group(1)].append(j,i)
 
 player = start

@@ -51,13 +51,13 @@ def get_num_adj():
     # return the number of passable adjacent tiles
     n = 0
     (curr_x, curr_y) = current
-    if Map.grid[curr_x+1][curr_y] == 0:
+    if Map.grid[curr_x+1][curr_y] == "0":
         n += 1
-    if Map.grid[curr_x-1][curr_y] == 0:
+    if Map.grid[curr_x-1][curr_y] == "0":
         n += 1
-    if Map.grid[curr_x][curr_y+1] == 0:
+    if Map.grid[curr_x][curr_y+1] == "0":
         n += 1
-    if Map.grid[curr_x][curr_y-1] == 0:
+    if Map.grid[curr_x][curr_y-1] == "0":
         n += 1
     return n
 
@@ -109,11 +109,11 @@ def move(action):
 
     if action == actions[0]: #up
         current = (curr_x, curr_y+1 if curr_y+1 < Map.y else curr_y)
-    elif action == actions[3]: #down
+    elif action == actions[2]: #down
         current = (curr_x, curr_y-1 if curr_y-1 >= 0 else curr_y)
-    elif action == actions[0]: #right
+    elif action == actions[3]: #right
         current = (curr_x+1 if curr_x+1 < Map.x else curr_x, curr_y)
-    elif action == actions[2]: #left
+    elif action == actions[1]: #left
         current = (curr_x-1 if curr_x-1 >= 0 else curr_x, curr_y)
     # otherwise waits
 
@@ -129,10 +129,10 @@ def move(action):
     for k,v in Map.activs.items() :# k = key (channel of activator), v = array of locations (x,y) for channel
         if current in v : #If current in activators
             for i in v: # Remove all activators with channel k
-                Map.grid[i[0]][i[1]] = 0
+                Map.grid[i[0]][i[1]] = '0'
             Map.activs.pop(k)
             for i in Map.deactivs[k]: # Remove all deactivatables with channel k
-                Map.grid[i[0]][i[1]] = 0
+                Map.grid[i[0]][i[1]] = '0'
             Map.deactivs.pop(k)
     for k,v in Map.deactivs.items() :
         if current in v:
@@ -178,7 +178,6 @@ def run() : #Random agent movements for testing
             alpha = pow(iter, -0.1)
             score = 1
         time.sleep((Map.w1.get() + 0.1) / 100)
-        print_states = Map.print_states
 
         random.seed(a=None)
         r = random.randint(0,4)
