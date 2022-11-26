@@ -5,6 +5,7 @@ from tkinter import simpledialog, messagebox
 from PIL import Image
 from PIL import ImageTk
 import os
+import re
 
 master = Tk()
 master.wm_title("Welcome to Treasure Hunters Inc.")
@@ -14,6 +15,13 @@ result = messagebox.askyesno(
 
 grid = []
 path = os.getcwd() + "/images/"
+wall_pic = ImageTk.PhotoImage(image=Image.open(path+'brick1.png'))
+goal_pic = ImageTk.PhotoImage(image=Image.open(path+'diamond1.png'))
+hazard_pic = ImageTk.PhotoImage(image=Image.open(path+'zombie1.png'))
+agent_pic = ImageTk.PhotoImage(image=Image.open(path+'steve1.png'))
+activ_pic = ImageTk.PhotoImage(image=Image.open(path+'lever1.png'))
+deact_pic = ImageTk.PhotoImage(image=Image.open(path+'trapdoor1.png'))
+
 
 triangle_size = 0.3
 text_offset = 17
@@ -43,13 +51,7 @@ else:
         quit()
     x = int(x_str)
     (x, y) = (x, x)
-    path = os.getcwd() + "/images/"
-    wall_pic = ImageTk.PhotoImage(image=Image.open(path+'brick.png'))
-    goal_pic = ImageTk.PhotoImage(image=Image.open(path+'diamond.png'))
-    hazard_pic = ImageTk.PhotoImage(image=Image.open(path+'zombie.png'))
-    agent_pic = ImageTk.PhotoImage(image=Image.open(path+'steve.png'))
-    activ_pic = ImageTk.PhotoImage(image=Image.open(path+'lever.jpg'))
-    deact_pic = ImageTk.PhotoImage(image=Image.open(path+'trapdoor.jpg'))
+
 
     board = Canvas(master, width=x*Width, height=y*Width)
     start_count = 0
@@ -58,7 +60,7 @@ else:
     for i in range(x):
         for j in range(y):
             board.create_rectangle(
-                i*Width, j*Width, (i+1)*Width, (j+1)*Width, fill="white", width=1)
+                i*Width, j*Width, (i+1)*Width, (j+1)*Width, fill="white", width=1, outline="black")
 
     board.pack(side=LEFT)
     grid = [[0 for row in range(x)] for col in range(y)]
@@ -162,11 +164,12 @@ for i in range(y):
         if grid[i][j] == 4:
             specials.append((j, i, "red", -1))
             hazards.append((j, i))
-        #TODO Capability of reading channel from file
-        if str(grid[i][j]).startswith("5"): # (Channel 1 for testing) 
-            activs["1"].append(j,i)
-        if str(grid[i][j]).startswith("6"):
-            deactivs["1"].append(j,i)
+        channel = re.search('5\((.*)\)', grid[i][j]) # Gets 'x' from '5(x)'
+        if result:
+            activs[channel.group(1)].append(j,i)
+        channel = re.search('6\((.*)\)', grid[i][j])  # Gets 'x' from '6(x)'
+        if result:
+            deactivs[channel.group(1)].append(j,i)
 
 player = start
 tri_objects = {}
@@ -211,6 +214,7 @@ def move_bot(new_x, new_y):
     if (new_x >= 0) and (new_x < x) and (new_y >= 0) and (new_y < y) and not ((new_x, new_y) in walls):
         board.coords(robot, new_x*Width+35, new_y*Width+35)
         player = (new_x, new_y)
+    
 
 
 def restart_game():

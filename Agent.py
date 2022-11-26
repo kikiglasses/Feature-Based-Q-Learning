@@ -102,7 +102,6 @@ def init():
                 continue
             states.append((i, j))
 
-
 def move(action):
     global current, score
     s = current
@@ -146,7 +145,6 @@ def move(action):
     s2 = current
     return s, action, s2
 
-
 def random_action(act):
     random.seed(a=None)
     r = random.random()
@@ -164,7 +162,30 @@ def random_action(act):
         print("Best action")
         return act
 
-t = threading.Thread(target=q_learn)
+def run() : #Random agent movements for testing
+    iter = 1
+    init()
+    while iter <= episodes :
+        if Map.flag is None:
+            quit()
+        if Map.flag is True:
+            continue
+        if Map.restart is True:
+            current = Map.start
+            Map.move_bot(current[0], current[1])
+            Map.restart = False
+            Map.restart_game()
+            alpha = pow(iter, -0.1)
+            score = 1
+        time.sleep((Map.w1.get() + 0.1) / 100)
+        print_states = Map.print_states
+
+        random.seed(a=None)
+        r = random.randint(0,4)
+        move(actions[r])
+
+
+t = threading.Thread(target=run)
 t.daemon = True
 t.start()
 Map.begin()
