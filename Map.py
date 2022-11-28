@@ -155,8 +155,9 @@ print(x, y)
 walls = []
 start = ()
 goals = []
-hazards = {"1":[(0,0), (0,1)]}
-hazard_loc = {"1":(1,0)}
+hazards = {}    # "Channel" : [line of ordered locations]
+hazard_ind = {} # "Channel" : current index
+hazard_dir = {} # "Channel" : current direction (forwards/backwards)
 activs = {}
 deactivs = {}
 
@@ -226,14 +227,30 @@ def set_color(state, action, val):
 
 def move_bot(new_x, new_y):
     global player, x, y, score, walk_reward, robot, restart
-
     if (new_x >= 0) and (new_x < x) and (new_y >= 0) and (new_y < y) and not ((new_x, new_y) in walls):
         board.coords(robot, new_x*Width+Width/2, new_y*Width+Width/2)
         player = (new_x, new_y)
+    move_hazards()
     
 def move_hazards():
     for k,v in hazards:
-        hazard_loc[k]
+
+        # Gets current location and next location
+        (curr_x, curr_y) = v[hazard_ind[k]]
+        (new_x, new_y) = v[hazard_ind[k] + hazard_dir[k]]
+
+        # Increments hazard index in correct direction
+        hazard_ind[k] = hazard_ind[k] + hazard_dir[k]
+
+        # If the hazard is at either end of its list of locations, change direction
+        if hazard_ind[k] + 1  == len(hazards[k]) :
+            hazard_dir[k] = -1
+        elif hazard_ind[k] == 0 :
+            hazard_dir[k] = 1
+        
+        # Modify the grid to show changes
+        grid[curr_x][curr_y] = 0
+        grid[new_x][new_y] = 4
 
 def restart_game():
     global player, score, robot, restart
