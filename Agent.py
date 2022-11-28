@@ -138,14 +138,10 @@ def move(action):
         return
         
     else:
-        print (Map.activs.items())
         for k,v in Map.activs.items() :# k = key (channel of activator), v = array of locations (x,y) for channel
-            print("activ: ", k, v)
             if current in v : #If current in activators
                 for i in v: # Remove all activators with channel k
                     Map.grid[i[0]][i[1]] = '0'
-                    print("i[0]: ", i[0], " i[1]: ", i[1])
-                    print(Map.item_grid)
                     Map.board.delete(Map.item_grid[i[0]][i[1]])
                 Map.activs.pop(k)
                 for i in Map.deactivs[k]: # Remove all deactivatables with channel k
