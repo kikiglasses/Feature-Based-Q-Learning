@@ -169,9 +169,10 @@ for i in range(y):
             start = (j, i)
         if grid[i][j] == "3":
             goals.append((j, i))
-        if grid[i][j] == "4":
+        channel = re.search('4\((.*),(.*)\)',    grid[i][j]) # regex check -- stores 'i' from '4(i,j)' into channel.group(1), 'j' into channel.group(2)
+        if channel: # If matches the regex (begins with 5, contains a pair of brackets, can contain two comma seperated strings between the breackets)
             hazards.append((j, i))
-        channel = re.search('5\((.*)\)',    grid[i][j]) # regex check -- stores 'x' from '5(x)' into channel.group(1)
+        channel = re.search('5\((.*)\)',    grid[i][j])  # regex check -- stores 'x' from '5(x)' into channel.group(1)
         if channel: # If matches the regex (begins with 5, contains a pair of brackets, can contain a string between the breackets)
             activs[channel.group(1)] = [(j,i)]
         channel = re.search('6\((.*)\)', grid[i][j])  # regex check same as above but for 6
