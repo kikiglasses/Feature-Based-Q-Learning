@@ -148,8 +148,9 @@ else:
 print(x, y)
 walls = []
 start = ()
-specials = []
-hazards = []
+goals = []
+hazards = {"1":[(0,0), (0,1)]}
+hazard_loc = {"1":(1,0)}
 activs = {}
 deactivs = {}
 
@@ -161,10 +162,8 @@ for i in range(y):
         if grid[i][j] == "2":
             start = (j, i)
         if grid[i][j] == "3":
-            specials.append((j, i, "green", 1))
-            goal = (j, i)
+            goals.append((j, i))
         if grid[i][j] == "4":
-            specials.append((j, i, "red", -1))
             hazards.append((j, i))
         channel = re.search('5\((.*)\)',    grid[i][j]) # regex check -- stores 'x' from '5(x)' into channel.group(1)
         if channel: # If matches the regex (begins with 5, contains a pair of brackets, can contain a string between the breackets)
@@ -186,11 +185,10 @@ def visualize_grid():
         for j in range(y):
             board.create_rectangle(
                 i*Width, j*Width, (i+1)*Width, (j+1)*Width, fill="white", width=1)
-    for (i, j, c, w) in specials: # Move to player update function
-        if w == -1:
-            board.create_image(i*Width+Width/2, j*Width+Width/2, image=hazard_pic)
-        elif w == 1:
-            board.create_image(i*Width+Width/2, j*Width+Width/2, image=goal_pic)
+    for (i, j) in hazards.values(): # Move to player update function
+        board.create_image(i*Width+Width/2, j*Width+Width/2, image=hazard_pic)
+    for (i, j) in goals:
+        board.create_image(i*Width+Width/2, j*Width+Width/2, image=goal_pic)
     for (i, j) in walls:
         board.create_image(i*Width+Width/2, j*Width+Width/2, image=wall_pic)
     for (i,j) in activs.values():
@@ -223,7 +221,9 @@ def move_bot(new_x, new_y):
         board.coords(robot, new_x*Width+Width/2, new_y*Width+Width/2)
         player = (new_x, new_y)
     
-
+def move_hazards():
+    for k,v in hazards:
+        hazard_loc[k]
 
 def restart_game():
     global player, score, robot, restart
@@ -264,6 +264,7 @@ w1.pack(side=LEFT)
 Label(text="Speed").pack()
 
 ################# Q Learning widgets ##################
+''''''
 separator = Frame(height=2, bd=1, relief=SUNKEN)
 separator.pack(fill=X, padx=2, pady=2)
 
