@@ -14,6 +14,7 @@ result = messagebox.askyesno(
     "Welcome to Grid World", "Do you want to create a new map?")
 
 grid = []
+item_grid = []
 path = os.getcwd() + "/images/"
 wall_pic = ImageTk.PhotoImage(image=Image.open(path+'brick1.png'))
 goal_pic = ImageTk.PhotoImage(image=Image.open(path+'diamond1.png'))
@@ -21,6 +22,8 @@ hazard_pic = ImageTk.PhotoImage(image=Image.open(path+'zombie1.png'))
 agent_pic = ImageTk.PhotoImage(image=Image.open(path+'steve1.png'))
 activ_pic = ImageTk.PhotoImage(image=Image.open(path+'lever1.png'))
 deactiv_pic = ImageTk.PhotoImage(image=Image.open(path+'trapdoor1.png'))
+
+
 
 
 triangle_size = 0.3
@@ -44,6 +47,7 @@ if not result:
         grid.append(number_strings)
     (x, y) = (len(grid[0]), len(grid))
     board = Canvas(master, width=x*Width, height=y*Width)
+    item_grid = [[0 for row in grid[0]] for col in grid]
 else:
     x_str = simpledialog.askstring('Size', 'Enter grid size')
     if x_str == None:
@@ -63,8 +67,10 @@ else:
                 i*Width, j*Width, (i+1)*Width, (j+1)*Width, fill="white", width=1, outline="black")
 
     board.pack(side=LEFT)
+
     grid = [["0" for row in range(x)] for col in range(y)]
     item_grid = [[0 for row in grid[0]] for col in grid]
+  
 
     var = StringVar(master)
     var.set("Select item")
@@ -167,10 +173,10 @@ for i in range(y):
             hazards.append((j, i))
         channel = re.search('5\((.*)\)',    grid[i][j]) # regex check -- stores 'x' from '5(x)' into channel.group(1)
         if channel: # If matches the regex (begins with 5, contains a pair of brackets, can contain a string between the breackets)
-            activs[channel.group(1)] = (j,i)
+            activs[channel.group(1)] = [(j,i)]
         channel = re.search('6\((.*)\)', grid[i][j])  # regex check same as above but for 6
         if channel: 
-            deactivs[channel.group(1)] = (j,i)
+            deactivs[channel.group(1)] = [(j,i)]
 
 player = start
 tri_objects = {}
@@ -181,6 +187,7 @@ restart = False
 # Displays grid and displays specials as images
 def visualize_grid():
     global specials, walls, Width, x, y, player
+    print ("activs: ", list(activs.values()))
     for i in range(x):
         for j in range(y):
             board.create_rectangle(
@@ -191,10 +198,12 @@ def visualize_grid():
         board.create_image(i*Width+Width/2, j*Width+Width/2, image=goal_pic)
     for (i, j) in walls:
         board.create_image(i*Width+Width/2, j*Width+Width/2, image=wall_pic)
-    for (i,j) in activs.values():
-        board.create_image(i*Width+Width/2, j*Width+Width/2, image=activ_pic)
-    for (i,j) in deactivs.values():
-        board.create_image(i*Width+Width/2, j*Width+Width/2, image=deactiv_pic)
+    for a in list(activs.values()):
+        for (i,j) in a :
+            item_grid[i][j] = board.create_image(i*Width+Width/2, j*Width+Width/2, image=activ_pic)
+    for d in list(deactivs.values()):
+        for (i,j) in d:
+            item_grid[i][j] = board.create_image(i*Width+Width/2, j*Width+Width/2, image=deactiv_pic)
 
 
 def set_color(state, action, val):

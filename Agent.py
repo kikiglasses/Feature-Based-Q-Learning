@@ -22,6 +22,8 @@ walls = Map.walls
 goal = Map.goal  # (Map.specials[1][0], Map.specials[1][1])
 print("Goal: ", goal)
 print("Walls: ", walls)
+print("Deactivs: ", Map.deactivs)
+print("Activs: ", Map.activs)
 
 Q = {}
 discount = Map.discount
@@ -114,9 +116,9 @@ def move(action):
     (curr_x, curr_y) = current
 
     if action == actions[0]: #up
-        current = (curr_x, curr_y+1 if curr_y+1 < Map.y else curr_y)
-    elif action == actions[2]: #down
         current = (curr_x, curr_y-1 if curr_y-1 >= 0 else curr_y)
+    elif action == actions[2]: #down
+        current = (curr_x, curr_y+1 if curr_y+1 < Map.y else curr_y)
     elif action == actions[3]: #right
         current = (curr_x+1 if curr_x+1 < Map.x else curr_x, curr_y)
     elif action == actions[1]: #left
@@ -129,20 +131,31 @@ def move(action):
     elif current == goal:
         Map.restart = True
         print("**********************  Success score = ", score)
+        return
     elif current in Map.hazards:
         Map.restart = True
         print("**********************  Fail score = ", score)
-    for k,v in Map.activs.items() :# k = key (channel of activator), v = array of locations (x,y) for channel
-        if current in v : #If current in activators
-            for i in v: # Remove all activators with channel k
-                Map.grid[i[0]][i[1]] = '0'
-            Map.activs.pop(k)
-            for i in Map.deactivs[k]: # Remove all deactivatables with channel k
-                Map.grid[i[0]][i[1]] = '0'
-            Map.deactivs.pop(k)
-    for k,v in Map.deactivs.items() :
-        if current in v:
-            current = s
+        return
+        
+    else:
+        print (Map.activs.items())
+        for k,v in Map.activs.items() :# k = key (channel of activator), v = array of locations (x,y) for channel
+            print("activ: ", k, v)
+            if current in v : #If current in activators
+                for i in v: # Remove all activators with channel k
+                    Map.grid[i[0]][i[1]] = '0'
+                    print("i[0]: ", i[0], " i[1]: ", i[1])
+                    print(Map.item_grid)
+                    Map.board.delete(Map.item_grid[i[0]][i[1]])
+                Map.activs.pop(k)
+                for i in Map.deactivs[k]: # Remove all deactivatables with channel k
+                    Map.grid[i[0]][i[1]] = '0'
+                    Map.board.delete(Map.item_grid[i[0]][i[1]])
+                Map.deactivs.pop(k)
+                break
+        for k,v in Map.deactivs.items() :
+            if current in v:
+                current = s
 
     Map.move_bot(current[0], current[1])
     # r = move_reward
@@ -169,8 +182,10 @@ def random_action(act):
         return act
 
 def random_run() : #Random agent movements for testing
+    global current
     iter = 1
     init()
+
     while iter <= episodes :
         if Map.flag is None:
             quit()
@@ -188,6 +203,32 @@ def random_run() : #Random agent movements for testing
         random.seed(a=None)
         r = random.randint(0,4)
         move(actions[r])
+
+def test_run() :
+    init()
+    def time_move(action) :
+        move(action)
+        time.sleep(0.3)
+    time_move(actions[3])
+    time_move(actions[0])
+    time_move(actions[0])
+    time_move(actions[0])
+    time_move(actions[0])
+    time_move(actions[2])
+    time_move(actions[2])
+    time_move(actions[2])
+    time_move(actions[3])
+    time_move(actions[3])
+    time_move(actions[3])
+    time_move(actions[3])
+    time_move(actions[1])
+    time_move(actions[1])
+    time_move(actions[1])
+    time_move(actions[1])
+    time_move(actions[0])
+    time_move(actions[0])
+    time_move(actions[0])
+    time_move(actions[0])
 
 
 # def wasd_run():
@@ -221,7 +262,7 @@ def random_run() : #Random agent movements for testing
         # if key_press == "Space" :
         #     move(actions[4])
 
-t = threading.Thread(target=random_run)
+t = threading.Thread(target=test_run)
 t.daemon = True
 t.start()
 Map.begin()
