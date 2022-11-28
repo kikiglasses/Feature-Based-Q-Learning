@@ -43,12 +43,21 @@ episodes = 10000
 steps = 300
 
 
-state_vector = [0,
+s = np.array([1, #State vector
                 0,
                 0,
                 0,
                 0,
-                0]
+                0,
+                0])
+
+w = np.array([1, #Weight vector
+                1,
+                1,
+                1,
+                1,
+                1,
+                1])
 
 def get_num_adj():
     # return the number of passable adjacent tiles
@@ -226,7 +235,9 @@ def test_run() :
     time_move(actions[0])
     time_move(actions[0])
 
-
+def q_learn_run() :
+    
+    
 # def wasd_run():
 #     init()
 #     def key_pressed(event):
