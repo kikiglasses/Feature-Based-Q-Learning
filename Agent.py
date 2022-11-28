@@ -19,8 +19,8 @@ states = []
 current = Map.start
 walls = Map.walls
 
-goal = Map.goal  # (Map.specials[1][0], Map.specials[1][1])
-print("Goal: ", goal)
+goals = Map.goals  # (Map.specials[1][0], Map.specials[1][1])
+print("Goal: ", goals)
 print("Walls: ", walls)
 print("Deactivs: ", Map.deactivs)
 print("Activs: ", Map.activs)
@@ -74,11 +74,15 @@ def get_num_adj():
     return n
 
 def goal_dist():
-    # return the Manhattan distance from the goal
-    # make global goal location variable
+    # return the Manhattan distance from the closest goal
     (curr_x, curr_y) = current
-    (goal_x, goal_y) = goal
-    return abs(goal_x - curr_x) + abs(goal_y - curr_y)
+    min_dist = -1
+    for goal in goals:
+        (goal_x, goal_y) = goal
+        temp = abs(goal_x - curr_x) + abs(goal_y - curr_y)
+        if (temp < min_dist or min_dist == -1):
+            min_dist = temp
+    return min_dist
 
 #Removed goal_direction
 
@@ -86,13 +90,14 @@ def haz_dist():
     # return the Manhattan distance from the nearest hazard
     (curr_x, curr_y) = current
     min_dist = -1
-    for hazard in Map.hazards :
-        (hazard_x, hazard_y) = hazard
+    for k,v in Map.hazards.items() :
+        (hazard_x, hazard_y) = v.values()[Map.hazard_ind[k]]
         temp = abs(hazard_x - curr_x) + abs(hazard_y - curr_y)
         if (temp < min_dist or min_dist == -1):
             min_dist = temp
     return min_dist
 
+# Maybe not a very useful feature
 def num_haz():
     return len(Map.hazards)
 
@@ -100,11 +105,12 @@ def activ_dist():
     # return Manhattan distance of closest unactivated activator
     (curr_x, curr_y) = current
     min_dist = -1
-    for activ in Map.activs :
-        (activ_x, activ_y) = activ
-        temp = abs(activ_x - curr_x) + abs(activ_y - curr_y)
-        if (temp < min_dist or min_dist == -1):
-            min_dist = temp
+    for k,v in Map.activs.items():
+        for activ in v:
+            (activ_x, activ_y) = activ
+            temp = abs(activ_x - curr_x) + abs(activ_y - curr_y)
+            if (temp < min_dist or min_dist == -1):
+                min_dist = temp
     return min_dist
 
 def num_unact_channels():      ### slight change from initial proposal
@@ -137,7 +143,7 @@ def move(action):
     # check for goal or hazard
     if current in walls:
         current = s
-    elif current == goal:
+    elif current in goals:
         Map.restart = True
         print("**********************  Success score = ", score)
         return
