@@ -166,19 +166,32 @@ for i in range(y):
     for j in range(x):
         if grid[i][j] == "1":
             walls.append((j, i))
-        if grid[i][j] == "2":
+        elif grid[i][j] == "2":
             start = (j, i)
-        if grid[i][j] == "3":
+        elif grid[i][j] == "3":
             goals.append((j, i))
-        channel = re.search('4\((.*),(.*)\)',    grid[i][j]) # regex check -- stores 'i' from '4(i,j)' into channel.group(1), 'j' into channel.group(2)
-        if channel: # If matches the regex (begins with 5, contains a pair of brackets, can contain two comma seperated strings between the breackets)
-            hazards.append((j, i))
-        channel = re.search('5\((.*)\)',    grid[i][j])  # regex check -- stores 'x' from '5(x)' into channel.group(1)
-        if channel: # If matches the regex (begins with 5, contains a pair of brackets, can contain a string between the breackets)
-            activs[channel.group(1)] = [(j,i)]
-        channel = re.search('6\((.*)\)', grid[i][j])  # regex check same as above but for 6
-        if channel: 
-            deactivs[channel.group(1)] = [(j,i)]
+
+        # regex check -- stores 'i' from '4(i,j)' into channel.group(1), 'j' into channel.group(2)
+        # If matches the regex (begins with 4, contains a pair of brackets, can contain two comma seperated strings between the breackets)
+        elif channel := re.search('4\((.*),(.*)\)', grid[i][j]):
+            if channel.group(1) not in hazards.keys():
+                hazards[channel.group(1)] = []
+                hazard_dir[channel.group(1)] = 1
+                hazard_ind[channel.group(1)] = 0
+            hazards[channel.group(1)].append((j, i))
+
+        # regex check -- stores 'x' from '5(x)' into channel.group(1)
+        # If matches the regex (begins with 5, contains a pair of brackets, can contain a string between the breackets)
+        elif channel := re.search('5\((.*)\)', grid[i][j]):
+            if channel.group(1) not in activs.keys():
+                activs[channel.group(1)] = []
+            activs[channel.group(1)].append((j,i))
+
+        # regex check same as above but for 6
+        elif channel := re.search('6\((.*)\)', grid[i][j]):
+            if channel.group(1) not in deactivs.keys():
+                deactivs[channel.group(1)] = []
+            deactivs[channel.group(1)].append((j,i))
 
 player = start
 tri_objects = {}
@@ -194,12 +207,14 @@ def visualize_grid():
         for j in range(y):
             board.create_rectangle(
                 i*Width, j*Width, (i+1)*Width, (j+1)*Width, fill="white", width=1)
-    for (i, j) in hazards.values(): # Move to player update function
-        board.create_image(i*Width+Width/2, j*Width+Width/2, image=hazard_pic)
+    print(hazards)
+    for k,v in hazards.items(): # Move to player update function
+        (i,j) = v[0]
+        item_grid[i][j] = board.create_image(i*Width+Width/2, j*Width+Width/2, image=hazard_pic)
     for (i, j) in goals:
-        board.create_image(i*Width+Width/2, j*Width+Width/2, image=goal_pic)
+        item_grid[i][j] = board.create_image(i*Width+Width/2, j*Width+Width/2, image=goal_pic)
     for (i, j) in walls:
-        board.create_image(i*Width+Width/2, j*Width+Width/2, image=wall_pic)
+        item_grid[i][j] = board.create_image(i*Width+Width/2, j*Width+Width/2, image=wall_pic)
     for a in list(activs.values()):
         for (i,j) in a :
             item_grid[i][j] = board.create_image(i*Width+Width/2, j*Width+Width/2, image=activ_pic)
@@ -233,7 +248,7 @@ def move_bot(new_x, new_y):
     move_hazards()
     
 def move_hazards():
-    for k,v in hazards:
+    for k,v in hazards.items():
 
         # Gets current location and next location
         (curr_x, curr_y) = v[hazard_ind[k]]
@@ -249,6 +264,10 @@ def move_hazards():
             hazard_dir[k] = 1
         
         # Modify the grid to show changes
+        item_grid[new_x][new_y] = board.create_image(new_x*Width+Width/2, new_y*Width+Width/2, image=hazard_pic)
+        board.delete(item_grid[curr_x][curr_y])
+        item_grid[curr_x][curr_y] = 0
+
         grid[curr_x][curr_y] = 0
         grid[new_x][new_y] = 4
 
