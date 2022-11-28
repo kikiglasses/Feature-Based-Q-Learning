@@ -20,14 +20,14 @@ goal_pic = ImageTk.PhotoImage(image=Image.open(path+'diamond1.png'))
 hazard_pic = ImageTk.PhotoImage(image=Image.open(path+'zombie1.png'))
 agent_pic = ImageTk.PhotoImage(image=Image.open(path+'steve1.png'))
 activ_pic = ImageTk.PhotoImage(image=Image.open(path+'lever1.png'))
-deact_pic = ImageTk.PhotoImage(image=Image.open(path+'trapdoor1.png'))
+deactiv_pic = ImageTk.PhotoImage(image=Image.open(path+'trapdoor1.png'))
 
 
 triangle_size = 0.3
 text_offset = 17
 cell_score_min = -0.2
 cell_score_max = 0.2
-Width = 70
+Width = 48
 actions = ["up", "left", "down", "right", "wait"]
 print_states = False
 
@@ -40,6 +40,7 @@ if not result:
     ins = open(filename, "r")
     for line in ins:
         number_strings = line.split()
+        print(number_strings)
         grid.append(number_strings)
     (x, y) = (len(grid[0]), len(grid))
     board = Canvas(master, width=x*Width, height=y*Width)
@@ -62,7 +63,7 @@ else:
                 i*Width, j*Width, (i+1)*Width, (j+1)*Width, fill="white", width=1, outline="black")
 
     board.pack(side=LEFT)
-    grid = [[0 for row in range(x)] for col in range(y)]
+    grid = [["0" for row in range(x)] for col in range(y)]
     item_grid = [[0 for row in grid[0]] for col in grid]
 
     var = StringVar(master)
@@ -86,40 +87,40 @@ else:
 
     def create_item(event):
         global robot, start_count, goal_count
-        x, y = int(event.x/75), int(event.y/75)
+        x, y = int(event.x/Width), int(event.y/Width)
         if item_grid[y][x] == 0:
             if var.get() == "walls":
                 item_grid[y][x] = board.create_image(
-                    x*Width+35, y*Width+35, image=wall_pic)
+                    x*Width+Width/2, y*Width+Width/2, image=wall_pic)
                 grid[y][x] = '1'
             elif var.get() == "start":
                 item_grid[y][x] = board.create_image(
-                    x*Width+35, y*Width+35, image=agent_pic)
+                    x*Width+Width/2, y*Width+Width/2, image=agent_pic)
                 grid[y][x] = '2'
                 start_count += 1
             elif var.get() == "goal":
                 item_grid[y][x] = board.create_image(
-                    x*Width+35, y*Width+35, image=goal_pic)
+                    x*Width+Width/2, y*Width+Width/2, image=goal_pic)
                 grid[y][x] = '3'
                 goal_count += 1
             elif var.get() == "hazard":
                 item_grid[y][x] = board.create_image(
-                    x*Width+35, y*Width+35, image=hazard_pic)
+                    x*Width+Width/2, y*Width+Width/2, image=hazard_pic)
                 grid[y][x] = '4'
             elif var.get() == "activator":
                 item_grid[y][x] = board.create_image(
-                    x*Width+35, y*Width+35, image=activ_pic)
-                grid[y][x] = '5'
+                    x*Width+Width/2, y*Width+Width/2, image=activ_pic)
+                grid[y][x] = '5(1)' #channel selection should be added to gui
             elif var.get() == "deactivatable":
                 item_grid[y][x] = board.create_image(
-                    x*Width+35, y*Width+35, image=deact_pic)
-                grid[y][x] = '6'
+                    x*Width+Width/2, y*Width+Width/2, image=deactiv_pic)
+                grid[y][x] = '6(1)'
 
     board.bind('<Button-1>', create_item)
 
     def delete_item(event):
         global start_count, goal_count
-        x, y = int(event.x/75), int(event.y/75)
+        x, y = int(event.x/Width), int(event.y/Width)
         if item_grid[y][x] != 0:
             board.delete(item_grid[y][x])
             item_grid[y][x] = 0
@@ -130,6 +131,7 @@ else:
                 goal_count -= 1
 
     board.bind('<Button-3>', delete_item)
+    board.bind('<Control-1>', delete_item)
     Label(text="Instructions: \n1. Select item from dropdown\n2.Left click on grid cell to add\n3. Right click on grid cell to remove\n\n\n\nNote: Please close \nthis window after finished.", font="Verdana 12").pack(side=BOTTOM)
     master.mainloop()
     master = Tk()
@@ -151,6 +153,7 @@ hazards = []
 activs = {}
 deactivs = {}
 
+# Add each type from grid list to its own list
 for i in range(y):
     for j in range(x):
         if grid[i][j] == "1":
@@ -163,12 +166,12 @@ for i in range(y):
         if grid[i][j] == "4":
             specials.append((j, i, "red", -1))
             hazards.append((j, i))
-        channel = re.search('5\((.*)\)',    grid[i][j]) # Gets 'x' from '5(x)'
-        if channel:
-            activs[channel.group(1)].append(j,i)
-        channel = re.search('6\((.*)\)', grid[i][j])  # Gets 'x' from '6(x)'
-        if channel:
-            deactivs[channel.group(1)].append(j,i)
+        channel = re.search('5\((.*)\)',    grid[i][j]) # regex check -- stores 'x' from '5(x)' into channel.group(1)
+        if channel: # If matches the regex (begins with 5, contains a pair of brackets, can contain a string between the breackets)
+            activs[channel.group(1)] = (j,i)
+        channel = re.search('6\((.*)\)', grid[i][j])  # regex check same as above but for 6
+        if channel: 
+            deactivs[channel.group(1)] = (j,i)
 
 player = start
 tri_objects = {}
@@ -176,19 +179,25 @@ text_objects = {}
 flag = True
 restart = False
 
+# Displays grid and displays specials as images
 def visualize_grid():
     global specials, walls, Width, x, y, player
     for i in range(x):
         for j in range(y):
             board.create_rectangle(
                 i*Width, j*Width, (i+1)*Width, (j+1)*Width, fill="white", width=1)
-    for (i, j, c, w) in specials:
+    for (i, j, c, w) in specials: # Move to player update function
         if w == -1:
-            board.create_image(i*Width+35, j*Width+35, image=hazard_pic)
-        else:
-            board.create_image(i*Width+35, j*Width+35, image=goal_pic)
+            board.create_image(i*Width+Width/2, j*Width+Width/2, image=hazard_pic)
+        elif w == 1:
+            board.create_image(i*Width+Width/2, j*Width+Width/2, image=goal_pic)
     for (i, j) in walls:
-        board.create_image(i*Width+35, j*Width+35, image=wall_pic)
+        board.create_image(i*Width+Width/2, j*Width+Width/2, image=wall_pic)
+    for (i,j) in activs.values():
+        board.create_image(i*Width+Width/2, j*Width+Width/2, image=activ_pic)
+    for (i,j) in deactivs.values():
+        board.create_image(i*Width+Width/2, j*Width+Width/2, image=deactiv_pic)
+
 
 def set_color(state, action, val):
     global cell_score_min, cell_score_max
@@ -211,7 +220,7 @@ def move_bot(new_x, new_y):
     global player, x, y, score, walk_reward, robot, restart
 
     if (new_x >= 0) and (new_x < x) and (new_y >= 0) and (new_y < y) and not ((new_x, new_y) in walls):
-        board.coords(robot, new_x*Width+35, new_y*Width+35)
+        board.coords(robot, new_x*Width+Width/2, new_y*Width+Width/2)
         player = (new_x, new_y)
     
 
@@ -221,12 +230,12 @@ def restart_game():
     player = (0, y-1)
     score = 1
     restart = False
-    board.coords(robot, start[0]*Width+35, start[1]*Width+35)
+    board.coords(robot, start[0]*Width+Width/2, start[1]*Width+Width/2)
 
 
 visualize_grid()
 robot = board.create_image(
-    start[0]*Width+35, start[1]*Width+35, image=agent_pic)
+    start[0]*Width+Width/2, start[1]*Width+Width/2, image=agent_pic)
 
 board.pack(side=LEFT)
 

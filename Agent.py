@@ -4,6 +4,7 @@ import Map
 import threading
 import time
 import random
+import keyboard
 
 # grid = [[0, 0, 0, 0],
 #         [0, -99, 0, 0],
@@ -60,7 +61,6 @@ def get_num_adj():
     if Map.grid[curr_x][curr_y-1] == "0":
         n += 1
     return n
-
 
 def goal_dist():
     # return the Manhattan distance from the goal
@@ -168,7 +168,7 @@ def random_action(act):
         print("Best action")
         return act
 
-def run() : #Random agent movements for testing
+def random_run() : #Random agent movements for testing
     iter = 1
     init()
     while iter <= episodes :
@@ -190,7 +190,38 @@ def run() : #Random agent movements for testing
         move(actions[r])
 
 
-t = threading.Thread(target=run)
+# def wasd_run():
+#     init()
+#     def key_pressed(event):
+#         if event.char == "W" :
+#             move(actions[0])
+#         elif event.char == "A" :
+#             move(actions[1])
+#         elif event.char == "S" :
+#             move(actions[2])
+#         elif event.char == "D" :
+#             move(actions[3])
+#         elif event.char == " " :
+#             move(actions[4])
+#         else :
+#             return
+#         iter = iter + 1
+#         return
+        
+
+    # Map.board.bind('<Key>', key_pressed)
+
+
+        # if key_press == "A" :
+        #     move(actions[1])
+        # if key_press == "S" :
+        #     move(actions[2])
+        # if key_press == "D" :
+        #     move(actions[3])
+        # if key_press == "Space" :
+        #     move(actions[4])
+
+t = threading.Thread(target=random_run)
 t.daemon = True
 t.start()
 Map.begin()
