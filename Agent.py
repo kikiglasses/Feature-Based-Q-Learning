@@ -4,12 +4,7 @@ import Map
 import threading
 import time
 import random
-import keyboard
 
-# grid = [[0, 0, 0, 0],
-#         [0, -99, 0, 0],
-#         [0, 0, 0, 0],
-#         [0, 0, 0, 0]]
 grid = Map.grid
 actions = Map.actions  # ["up", "left", "down", "right", "wait"]
 policy_sign = ["^", "<", "v", ">"]
@@ -26,19 +21,12 @@ print("Walls: ", walls)
 print("Deactivs: ", Map.deactivs)
 print("Activs: ", Map.activs)
 '''
-Q = {}
 discount = Map.discount
 print_states = Map.print_states
 
 ### Reward Function
-alpha = 1
+learning_rate = 0.5
 score = 1
-move_reward = -0.04
-goal_reward = 1
-hazard_reward = -1
-move_pass = 0.8
-move_fail = 0.1
-move_action = [-1, 0, 1]
 epsilon = 0.1
 episodes = 10000
 steps = 300
@@ -52,81 +40,103 @@ s = np.array([1, #State vector
                 0,
                 0])
 
-w = np.array([1, #Weight vector
-                1,
-                1,
-                1,
-                1,
-                1,
-                1])
+w = np.zeros(np.shape(s))
 
 visited = np.zeros((Map.x, Map.y))
 
-def get_num_adj():
-    # return the number of passable adjacent tiles
+def get_features(x,y) :
+    feature_vector =  np.array([1,
+        get_num_adj(x,y),
+        goal_dist(x,y),
+        haz_dist(x,y),
+        num_haz(),
+        activ_dist(x,y),
+        num_unact_channels()])
+    return feature_vector
+
+
+
+def get_num_adj(x,y):
+    # return the number of passable adjacent tiles from x,y
     n = 0
-    (curr_x, curr_y) = current
-    if Map.grid[curr_x+1][curr_y] == "0":
-        n += 1
-    if Map.grid[curr_x-1][curr_y] == "0":
-        n += 1
-    if Map.grid[curr_x][curr_y+1] == "0":
-        n += 1
-    if Map.grid[curr_x][curr_y-1] == "0":
-        n += 1
+    if x + 1 < Map.x : #check right
+        if (x + 1, y) not in walls :
+            if (x + 1, y) not in list(Map.deactivs.values()) :
+                n += 1
+    if x - 1 >= 0 : #check left
+        if (x - 1, y) not in walls :
+            if (x - 1, y) not in list(Map.deactivs.values()) :
+                n += 1
+    if y - 1 >= 0 : #check up
+        if (x, y - 1) not in walls :
+            if (x, y - 1) not in list(Map.deactivs.values()) :
+                n += 1
+    if y + 1 < Map.y : #check left
+        if (x, y + 1) not in walls :
+            if (x, y + 1) not in list(Map.deactivs.values()) :
+                n += 1
     return n
 
-def goal_dist():
+def goal_dist(x,y):
     # return the Manhattan distance from the closest goal
-    (curr_x, curr_y) = current
     min_dist = -1
     for goal in goals:
         (goal_x, goal_y) = goal
-        temp = abs(goal_x - curr_x) + abs(goal_y - curr_y)
+        temp = abs(goal_x - x) + abs(goal_y - y)
         if (temp < min_dist or min_dist == -1):
             min_dist = temp
     return min_dist
 
 # Removed goal_direction as it is captured by goal_dist()
 
-def haz_dist():
+def haz_dist(x,y):
     # return the Manhattan distance from the nearest hazard
-    (curr_x, curr_y) = current
     min_dist = -1
     for k,v in Map.hazards.items() :
-        (hazard_x, hazard_y) = v.values()[Map.hazard_ind[k]]
-        temp = abs(hazard_x - curr_x) + abs(hazard_y - curr_y)
+        (hazard_x, hazard_y) = v[Map.hazard_ind[k]]
+        temp = abs(hazard_x - x) + abs(hazard_y - y)
         if (temp < min_dist or min_dist == -1):
             min_dist = temp
     return min_dist
 
 # Maybe not a very useful feature
 def num_haz():
-    return len(Map.hazards)
+    return len(list(Map.hazards.keys()))
 
-def activ_dist():
+def activ_dist(x,y):
     # return Manhattan distance of closest unactivated activator
-    (curr_x, curr_y) = current
     min_dist = -1
     for k,v in Map.activs.items():
         for activ in v:
             (activ_x, activ_y) = activ
-            temp = abs(activ_x - curr_x) + abs(activ_y - curr_y)
+            temp = abs(activ_x - x) + abs(activ_y - y)
             if (temp < min_dist or min_dist == -1):
                 min_dist = temp
     return min_dist
 
 def num_unact_channels():      ### slight change from initial proposal
     # return number of channels yet to be activated
-    return(len(Map.activs.keys()))
+    return(len(list(Map.activs.keys())))
 
-
-def init():
-    for i in range(Map.x):
-        for j in range(Map.y):
-            if (i, j) in walls:
-                continue
-            states.append((i, j))
+def get_legal_moves(x,y):
+    legal_moves = []
+    if x + 1 < Map.x : #check right
+        if (x + 1, y) not in walls :
+            if (x + 1, y) not in list(Map.deactivs.values()) :
+                legal_moves.append((x+1, y))
+    if x - 1 >= 0 : #check left
+        if (x - 1, y) not in walls :
+            if (x - 1, y) not in list(Map.deactivs.values()) :
+                legal_moves.append((x-1,y))
+    if y - 1 >= 0 : #check up
+        if (x, y - 1) not in walls :
+            if (x, y - 1) not in list(Map.deactivs.values()) :
+                legal_moves.append((x,y-1))
+    if y + 1 < Map.y : #check left
+        if (x, y + 1) not in walls :
+            if (x, y + 1) not in list(Map.deactivs.values()) :
+                legal_moves.append((x,y+1))
+    return legal_moves
 
 def move(action):
     global current, score
@@ -181,27 +191,9 @@ def move(action):
     s2 = current
     return s, action, s2
 
-def random_action(act):
-    random.seed(a=None)
-    r = random.random()
-    other_actions = []
-    for a in actions:
-        if a != act:
-            other_actions.append(a)
-    print(other_actions)
-    if r >= 1 - epsilon:
-        r2 = random.randint(0, 2)
-        print("Random action:", other_actions[r2])
-        return other_actions[r2]
-
-    else:
-        print("Best action")
-        return act
-
 def random_run() : #Random agent movements for testing
     global current
     iter = 1
-    init()
 
     while iter <= episodes :
         if Map.flag is None:
@@ -222,7 +214,6 @@ def random_run() : #Random agent movements for testing
         move(actions[r])
 
 def test_run() :
-    init()
     def time_move(action) :
         move(action)
         time.sleep(0.3)
@@ -247,11 +238,13 @@ def test_run() :
     time_move(actions[0])
     time_move(actions[0])
 
+def get_q(s,w) :
+    return np.dot(w.T,s)
+
 def q_learn() :
-    global alpha, discount, current, score, epsilon, episodes, print_states
+    global alpha, discount, current, score, epsilon, episodes, print_states, w
 
     iter = 1
-    init()
 
     while iter <= episodes:
         # Agent reached a goal/hazard
@@ -270,11 +263,35 @@ def q_learn() :
         discount = Map.discount
         print_states = Map.print_states
 
-        print("Epsilon: ", epsilon)
-        print("Discount: ", discount)
+        q =[]
+        print(current)
+        for move in get_legal_moves(current[0],current[1]):
+            si = get_features(move[0], move[1])
+            q.append((move[0], move[1], get_q(si,w)))
+        
+        r = random.random()
+
+        movement_q = (0,0,0)
+        if r < epsilon:
+            r = random.randint(0, len(q)-1)
+            movement_q = q[r]
+            Map.move_bot(movement_q[0], movement_q[1])
+            
+        else:
+            for i in q :
+                if  i[2] > movement_q[2]:
+                    movement_q = i
+            Map.move_bot(movement_q[0], movement_q[1])
+        print("Moved to: ", movement_q[0], movement_q[1])
+
+        r =1
+
+        w += (learning_rate * (r + discount * get_q(s, w) - movement_q[2])) * s 
+        print(w)
+
+        
     
 # def wasd_run():
-#     init()
 #     def key_pressed(event):
 #         if event.char == "W" :
 #             move(actions[0])
@@ -305,9 +322,7 @@ def q_learn() :
         #     move(actions[4])
 
 
-#t = threading.Thread(target=q_learn)
-#t = threading.Thread(target=test_run)
-t = threading.Thread(target=random_run)
+t = threading.Thread(target=q_learn)
 t.daemon = True
 t.start()
 Map.begin()
