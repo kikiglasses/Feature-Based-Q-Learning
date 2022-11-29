@@ -260,7 +260,7 @@ def get_q(s,w) :
     return np.dot(w.T,s)
 
 def q_learn() :
-    global alpha, discount, current, score, epsilon, episodes, print_states, iter
+    global alpha, discount, current, score, epsilon, episodes, print_states, iter, w
 
     iter = 1
 
@@ -274,7 +274,6 @@ def q_learn() :
         print_states = Map.print_states
 
         q =[]
-        print(current)
         for move in get_legal_moves(current[0],current[1]):
             si = get_features(move[0], move[1])
             q.append((move[0], move[1], get_q(si,w)))
@@ -285,19 +284,20 @@ def q_learn() :
         if r < epsilon:
             r = random.randint(0, len(q)-1)
             movement_q = q[r]
-            Map.move_bot(movement_q[0], movement_q[1])
             
         else:
             for i in q :
-                if  i[2] > movement_q[2]:
+                print (i)
+                if (i[2] > movement_q[2] or movement_q == (0,0,0)):
                     movement_q = i
-            Map.move_bot(movement_q[0], movement_q[1])
+        Map.move_bot(movement_q[0], movement_q[1])
+        current= (movement_q[0], movement_q[1])
         print("Moved to: ", movement_q[0], movement_q[1])
 
         r =1
 
         w += (learning_rate * (r + discount * get_q(s, w) - movement_q[2])) * s 
-        print(w)
+        print
 
         
     
