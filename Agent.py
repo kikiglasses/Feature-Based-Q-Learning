@@ -19,12 +19,13 @@ states = []
 current = Map.start
 walls = Map.walls
 
-goals = Map.goals  # (Map.specials[1][0], Map.specials[1][1])
+goals = Map.goals
+'''
 print("Goal: ", goals)
 print("Walls: ", walls)
 print("Deactivs: ", Map.deactivs)
 print("Activs: ", Map.activs)
-
+'''
 Q = {}
 discount = Map.discount
 print_states = Map.print_states
@@ -59,6 +60,8 @@ w = np.array([1, #Weight vector
                 1,
                 1])
 
+visited = np.zeros((Map.x, Map.y))
+
 def get_num_adj():
     # return the number of passable adjacent tiles
     n = 0
@@ -84,7 +87,7 @@ def goal_dist():
             min_dist = temp
     return min_dist
 
-#Removed goal_direction
+# Removed goal_direction as it is captured by goal_dist()
 
 def haz_dist():
     # return the Manhattan distance from the nearest hazard
@@ -130,6 +133,7 @@ def move(action):
     s = current
     (curr_x, curr_y) = current
 
+    ### Checks move is valid for map
     if action == actions[0]: #up
         current = (curr_x, curr_y-1 if curr_y-1 >= 0 else curr_y)
     elif action == actions[2]: #down
@@ -147,10 +151,11 @@ def move(action):
         Map.restart = True
         print("**********************  Success score = ", score)
         return
-    elif current in Map.hazards:
-        Map.restart = True
-        print("**********************  Fail score = ", score)
-        return
+    for k,v in Map.hazards.items():
+        if current == v[Map.hazard_ind[k]]:
+            Map.restart = True
+            print("**********************  Fail score = ", score)
+            return
         
     else:
         for k,v in Map.activs.items() :# k = key (channel of activator), v = array of locations (x,y) for channel
@@ -169,9 +174,10 @@ def move(action):
                 current = s
 
     Map.move_bot(current[0], current[1])
-    # r = move_reward
 
-    # score += r
+    # Increments visited grid for new location
+    visited[current[0]][current[1]] += 1
+
     s2 = current
     return s, action, s2
 
@@ -209,7 +215,7 @@ def random_run() : #Random agent movements for testing
             Map.restart_game()
             alpha = pow(iter, -0.1)
             score = 1
-        time.sleep((Map.w1.get() + 0.1) / 100)
+        time.sleep((1.9*Map.w1.get() - 19.9) / -18)
 
         random.seed(a=None)
         r = random.randint(0,4)
@@ -241,8 +247,31 @@ def test_run() :
     time_move(actions[0])
     time_move(actions[0])
 
-def q_learn_run() :
-    
+def q_learn() :
+    global alpha, discount, current, score, epsilon, episodes, print_states
+
+    iter = 1
+    init()
+
+    while iter <= episodes:
+        # Agent reached a goal/hazard
+        if Map.restart is True:
+            current = Map.start
+            visited[current[0]][current[1]] += 1
+            Map.move_bot(current[0], current[1])
+            Map.restart = False
+            Map.restart_game()
+            alpha = pow(iter, -0.1)
+            score = 1
+
+        time.sleep((1.9*Map.w1.get() - 19.9) / -9)
+        epsilon = Map.w2.get()
+        # epsilon = soft_max(current, iter)
+        discount = Map.discount
+        print_states = Map.print_states
+
+        print("Epsilon: ", epsilon)
+        print("Discount: ", discount)
     
 # def wasd_run():
 #     init()
@@ -275,7 +304,10 @@ def q_learn_run() :
         # if key_press == "Space" :
         #     move(actions[4])
 
-t = threading.Thread(target=test_run)
+
+#t = threading.Thread(target=q_learn)
+#t = threading.Thread(target=test_run)
+t = threading.Thread(target=random_run)
 t.daemon = True
 t.start()
 Map.begin()

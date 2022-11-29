@@ -8,7 +8,7 @@ import os
 import re
 
 master = Tk()
-master.wm_title("Welcome to Treasure Hunters Inc.")
+master.wm_title("Dynamic Hazard Grid World")
 
 result = messagebox.askyesno(
     "Welcome to Grid World", "Do you want to create a new map?")
@@ -43,7 +43,7 @@ if not result:
     ins = open(filename, "r")
     for line in ins:
         number_strings = line.split()
-        print(number_strings)
+        #print(number_strings)
         grid.append(number_strings)
     (x, y) = (len(grid[0]), len(grid))
     board = Canvas(master, width=x*Width, height=y*Width)
@@ -141,7 +141,7 @@ else:
     Label(text="Instructions: \n1. Select item from dropdown\n2.Left click on grid cell to add\n3. Right click on grid cell to remove\n\n\n\nNote: Please close \nthis window after finished.", font="Verdana 12").pack(side=BOTTOM)
     master.mainloop()
     master = Tk()
-    master.wm_title("Welcome to Treasure Hunters Inc.")
+    master.wm_title("Dynamic Hazard Grid World")
     board = Canvas(master, width=x*Width, height=y*Width)
 
     if start_count < 1:
@@ -202,12 +202,12 @@ restart = False
 # Displays grid and displays specials as images
 def visualize_grid():
     global specials, walls, Width, x, y, player
-    print ("activs: ", list(activs.values()))
+    #print ("activs: ", list(activs.values()))
     for i in range(x):
         for j in range(y):
             board.create_rectangle(
                 i*Width, j*Width, (i+1)*Width, (j+1)*Width, fill="white", width=1)
-    print(hazards)
+    #print(hazards)
     for k,v in hazards.items(): # Move to player update function
         (i,j) = v[0]
         item_grid[i][j] = board.create_image(i*Width+Width/2, j*Width+Width/2, image=hazard_pic)
@@ -305,18 +305,18 @@ b1.pack()
 #   Sliders for speed and Epsilon
 q3frame = Frame(master)
 q3frame.pack()
-w1 = Scale(q3frame, from_=0, to=50, orient=HORIZONTAL)
+w1 = Scale(q3frame, from_=1, to=10, orient=HORIZONTAL)
 w1.pack(side=LEFT)
 Label(text="Speed").pack()
 
 ################# Q Learning widgets ##################
-''''''
+
 separator = Frame(height=2, bd=1, relief=SUNKEN)
 separator.pack(fill=X, padx=2, pady=2)
 
 Label(text="Q Learning Parameters\n", font="Verdana 12 bold").pack()
 
-#   Discount text entry and button
+# Discount text entry and button
 qframe = Frame(master)
 qframe.pack()
 e = Entry(qframe, width=5)
@@ -364,15 +364,12 @@ Label(text="").pack()
 # Exploration bar
 q4frame = Frame(master)
 q4frame.pack()
-w2 = Scale(q4frame, from_=0.0, to=0.9, orient=HORIZONTAL, resolution=0.1)
+w2 = Scale(q4frame, from_=0.0, to=0.8, orient=HORIZONTAL, resolution=0.05)
 w2.set(0.1)
 w2.pack()
-Label(text="Exploration (eps)").pack()
+Label(text="Epsilon").pack()
 Label(text="").pack()
 
-# Print states toggle
-q5frame = Frame(master)
-q5frame.pack()
 
 def printStates(event):
     global print_states
@@ -382,10 +379,16 @@ def printStates(event):
     else:
         print_states = True
 
+# Toggle Print States Button
+'''
+q5frame = Frame(master)
+q5frame.pack()
+
 b5 = Button(q5frame, text="Toggle Print States")
 b5.bind("<Button-1>", printStates)
 b5.pack(side=LEFT)
 Label(text="").pack()
+'''
 
 def begin():
     global flag
