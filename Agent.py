@@ -62,27 +62,27 @@ w = np.array([1, #Weight vector
 
 visited = np.zeros((Map.x, Map.y))
 
-def get_num_adj():
+def get_num_adj(location):
     # return the number of passable adjacent tiles
     n = 0
-    (curr_x, curr_y) = current
-    if Map.grid[curr_x+1][curr_y] == "0":
+    (loc_x, loc_y) = location
+    if Map.grid[loc_x+1][loc_y] == "0":
         n += 1
-    if Map.grid[curr_x-1][curr_y] == "0":
+    if Map.grid[loc_x-1][loc_y] == "0":
         n += 1
-    if Map.grid[curr_x][curr_y+1] == "0":
+    if Map.grid[loc_x][loc_y+1] == "0":
         n += 1
-    if Map.grid[curr_x][curr_y-1] == "0":
+    if Map.grid[loc_x][loc_y-1] == "0":
         n += 1
     return n
 
-def goal_dist():
+def goal_dist(location):
     # return the Manhattan distance from the closest goal
-    (curr_x, curr_y) = current
+    (loc_x, loc_y) = location
     min_dist = -1
     for goal in goals:
         (goal_x, goal_y) = goal
-        temp = abs(goal_x - curr_x) + abs(goal_y - curr_y)
+        temp = abs(goal_x - loc_x) + abs(goal_y - loc_y)
         if (temp < min_dist or min_dist == -1):
             min_dist = temp
     return min_dist
@@ -91,11 +91,11 @@ def goal_dist():
 
 def haz_two_away(location):
     # return the Manhattan distance from the nearest hazard
-    (curr_x, curr_y) = current
+    (loc_x, loc_y) = location
     min_dist = -1
     for k,v in Map.hazards.items() :
         (hazard_x, hazard_y) = v.values()[Map.hazard_ind[k]]
-        temp = abs(hazard_x - curr_x) + abs(hazard_y - curr_y)
+        temp = abs(hazard_x - loc_x) + abs(hazard_y - loc_y)
         if (temp < min_dist or min_dist == -1):
             min_dist = temp
     if (min_dist > 2 or min_dist == -1):
@@ -106,14 +106,14 @@ def haz_two_away(location):
 def num_haz():
     return len(Map.hazards)
 
-def activ_dist():
+def activ_dist(location):
     # return Manhattan distance of closest unactivated activator
-    (curr_x, curr_y) = current
+    (loc_x, loc_y) = location
     min_dist = -1
     for k,v in Map.activs.items():
         for activ in v:
             (activ_x, activ_y) = activ
-            temp = abs(activ_x - curr_x) + abs(activ_y - curr_y)
+            temp = abs(activ_x - loc_x) + abs(activ_y - loc_y)
             if (temp < min_dist or min_dist == -1):
                 min_dist = temp
     return min_dist
