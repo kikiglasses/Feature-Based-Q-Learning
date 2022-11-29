@@ -159,9 +159,7 @@ else:
         messagebox.showwarning('Error', 'No goal found!')
         quit()
 
-print(x, y)
 walls = []
-start = ()
 goals = []
 hazards = {}    # "Channel" : [line of ordered locations]
 hazard_ind = {} # "Channel" : current index
@@ -178,6 +176,7 @@ for i in range(y):
             walls.append((j, i))
         elif grid[i][j] == "2":
             start = (j, i)
+            print(start)
         elif grid[i][j] == "3":
             goals.append((j, i))
 
@@ -283,7 +282,7 @@ def move_hazards():
 
 def restart_game():
     global player, score, robot, restart
-    player = (0, y-1)
+    player = start
     score = 1
     restart = False
     board.coords(robot, start[0]*Width+Width/2, start[1]*Width+Width/2)

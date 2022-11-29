@@ -10,7 +10,6 @@ actions = Map.actions  # ["up", "left", "down", "right", "wait"]
 policy_sign = ["^", "<", "v", ">"]
 states = []
 
-# start = Map.start # (0, Map.y - 1)
 current = Map.start
 walls = Map.walls
 
@@ -167,12 +166,12 @@ def move(action):
     # Check for goal or hazard
     elif current in goals:
         Map.restart = True
-        print("**********************  Success score = ", score)
+        print("Success score = ", score)
         return
     for k,v in Map.hazards.items():
         if current == v[Map.hazard_ind[k]]:
             Map.restart = True
-            print("**********************  Fail score = ", score)
+            print("Fail score = ", score)
             return
     
     # check for activators
@@ -204,7 +203,6 @@ def move(action):
 def random_run() : #Random agent movements for testing
     global current
     iter = 1
-
     while iter <= episodes :
         if Map.flag is None:
             quit()
@@ -214,7 +212,7 @@ def random_run() : #Random agent movements for testing
         wait()
 
         random.seed(a=None)
-        r = random.randint(0,4)
+        r = random.randint(0,3)
         move(actions[r])
 
 def test_run() :
@@ -247,7 +245,7 @@ def restart_check(iter):
     if Map.restart is True:
         current = Map.start
         visited[current[0]][current[1]] += 1
-        Map.move_bot(current[0], current[1])
+        #Map.move_bot(current[0], current[1])
         Map.restart = False
         Map.restart_game()
         alpha = pow(iter, -0.1)
@@ -262,7 +260,7 @@ def get_q(s,w) :
     return np.dot(w.T,s)
 
 def q_learn() :
-    global alpha, discount, current, score, epsilon, episodes, print_states, w
+    global alpha, discount, current, score, epsilon, episodes, print_states, iter
 
     iter = 1
 
