@@ -146,11 +146,16 @@ def move(action):
         current = (curr_x+1 if curr_x+1 < Map.x else curr_x, curr_y)
     elif action == actions[1]: #left
         current = (curr_x-1 if curr_x-1 >= 0 else curr_x, curr_y)
-    # otherwise waits
 
-    # check for goal or hazard
-    if current in walls:
+    # Add deactivatable walls to walls
+    temp = walls.copy()
+    for arr in Map.deactivs.values():
+        temp.append(arr)
+    # Check if move would take into a wall
+    if current in temp:
         current = s
+    
+    # Check for goal or hazard
     elif current in goals:
         Map.restart = True
         print("**********************  Success score = ", score)
@@ -160,6 +165,7 @@ def move(action):
             Map.restart = True
             print("**********************  Fail score = ", score)
             return
+    
     # check for activators
     else:
         for k,v in Map.activs.copy().items() :# k = key (channel of activator), v = array of locations (x,y) for channel
