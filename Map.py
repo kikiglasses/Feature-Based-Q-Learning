@@ -138,7 +138,15 @@ else:
 
     board.bind('<Button-3>', delete_item)
     board.bind('<Control-1>', delete_item)
-    Label(text="Instructions: \n1. Select item from dropdown\n2.Left click on grid cell to add\n3. Right click on grid cell to remove\n\n\n\nNote: Please close \nthis window after finished.", font="Verdana 12").pack(side=BOTTOM)
+    Label(text="""Instructions:
+    1. Select item from dropdown
+    2.Left click on grid cell to add
+    3. Right click on grid cell to remove
+
+    Note: Please close 
+    this window when finished.""",
+    font="Verdana 12").pack(side=BOTTOM)
+
     master.mainloop()
     master = Tk()
     master.wm_title("Dynamic Hazard Grid World")
@@ -159,7 +167,9 @@ hazards = {}    # "Channel" : [line of ordered locations]
 hazard_ind = {} # "Channel" : current index
 hazard_dir = {} # "Channel" : current direction (forwards/backwards)
 activs = {}
+xactivs = {} # Dictionary of activators that have been activated in the current run
 deactivs = {}
+xdeactivs = {}
 
 # Add each type from grid list to its own list
 for i in range(y):
@@ -277,6 +287,17 @@ def restart_game():
     score = 1
     restart = False
     board.coords(robot, start[0]*Width+Width/2, start[1]*Width+Width/2)
+    for k,v in xactivs.copy().items() :# k = key (channel of activator), v = array of locations (x,y) for channel
+        for x in v:
+            (i,j) = x
+            grid[i][j] = '5'
+            item_grid[i][j] = board.create_image(i*Width+Width/2, j*Width+Width/2, image=activ_pic)
+        activs[k] = xactivs.pop(k)
+        for x in xdeactivs[k]:
+            (i,j) = x
+            grid[i][j] = '6'
+            item_grid[i][j] = board.create_image(i*Width+Width/2, j*Width+Width/2, image=deactiv_pic)
+        deactivs[k] = xdeactivs.pop(k)
 
 
 visualize_grid()
