@@ -97,7 +97,9 @@ def haz_dist(x,y):
         temp = abs(hazard_x - x) + abs(hazard_y - y)
         if (temp < min_dist or min_dist == -1):
             min_dist = temp
-    return min_dist
+    if (min_dist > 2 or min_dist == -1):
+        return 0
+    return 1
 
 # Maybe not a very useful feature
 def num_haz():
@@ -138,6 +140,7 @@ def get_legal_moves(x,y):
                 legal_moves.append((x,y+1))
     return legal_moves
 
+
 def move(action):
     global current, score
     s = current
@@ -152,11 +155,16 @@ def move(action):
         current = (curr_x+1 if curr_x+1 < Map.x else curr_x, curr_y)
     elif action == actions[1]: #left
         current = (curr_x-1 if curr_x-1 >= 0 else curr_x, curr_y)
-    # otherwise waits
 
-    # check for goal or hazard
-    if current in walls:
+    # Add deactivatable walls to walls
+    temp = walls.copy()
+    for arr in Map.deactivs.values():
+        temp.append(arr)
+    # Check if move would take into a wall
+    if current in temp:
         current = s
+    
+    # Check for goal or hazard
     elif current in goals:
         Map.restart = True
         print("**********************  Success score = ", score)
@@ -166,20 +174,22 @@ def move(action):
             Map.restart = True
             print("**********************  Fail score = ", score)
             return
-        
+    
+    # check for activators
     else:
-        for k,v in Map.activs.items() :# k = key (channel of activator), v = array of locations (x,y) for channel
+        for k,v in Map.activs.copy().items() :# k = key (channel of activator), v = array of locations (x,y) for channel
             if current in v : #If current in activators
-                for i in v: # Remove all activators with channel k
-                    Map.grid[i[0]][i[1]] = '0'
-                    Map.board.delete(Map.item_grid[i[0]][i[1]])
-                Map.activs.pop(k)
-                for i in Map.deactivs[k]: # Remove all deactivatables with channel k
-                    Map.grid[i[0]][i[1]] = '0'
-                    Map.board.delete(Map.item_grid[i[0]][i[1]])
-                Map.deactivs.pop(k)
-                break
-        for k,v in Map.deactivs.items() :
+                for x in v: # Remove all activators with channel k
+                    (i,j) = x
+                    Map.grid[i][j] = '0'
+                    Map.board.delete(Map.item_grid[i][j])
+                Map.xactivs[k] = Map.activs.pop(k)
+                for x in Map.deactivs[k]: # Remove all deactivatables with channel k
+                    (i,j) = x
+                    Map.grid[i][j] = '0'
+                    Map.board.delete(Map.item_grid[i][j])
+                Map.xdeactivs[k] = Map.deactivs.pop(k)
+        for k,v in Map.deactivs.copy().items() :
             if current in v:
                 current = s
 
@@ -200,14 +210,8 @@ def random_run() : #Random agent movements for testing
             quit()
         if Map.flag is True:
             continue
-        if Map.restart is True:
-            current = Map.start
-            Map.move_bot(current[0], current[1])
-            Map.restart = False
-            Map.restart_game()
-            alpha = pow(iter, -0.1)
-            score = 1
-        time.sleep((1.9*Map.w1.get() - 19.9) / -18)
+        restart_check(iter)
+        wait()
 
         random.seed(a=None)
         r = random.randint(0,4)
@@ -238,6 +242,22 @@ def test_run() :
     time_move(actions[0])
     time_move(actions[0])
 
+def restart_check(iter):
+    global alpha, score
+    if Map.restart is True:
+        current = Map.start
+        visited[current[0]][current[1]] += 1
+        Map.move_bot(current[0], current[1])
+        Map.restart = False
+        Map.restart_game()
+        alpha = pow(iter, -0.1)
+        score = 1
+
+
+def wait():
+    time.sleep((1.9*Map.w1.get() - 19.9) / -18)
+
+
 def get_q(s,w) :
     return np.dot(w.T,s)
 
@@ -248,16 +268,8 @@ def q_learn() :
 
     while iter <= episodes:
         # Agent reached a goal/hazard
-        if Map.restart is True:
-            current = Map.start
-            visited[current[0]][current[1]] += 1
-            Map.move_bot(current[0], current[1])
-            Map.restart = False
-            Map.restart_game()
-            alpha = pow(iter, -0.1)
-            score = 1
-
-        time.sleep((1.9*Map.w1.get() - 19.9) / -9)
+        restart_check(iter)
+        wait()
         epsilon = Map.w2.get()
         # epsilon = soft_max(current, iter)
         discount = Map.discount
