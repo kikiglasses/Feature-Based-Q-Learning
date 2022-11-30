@@ -272,26 +272,38 @@ def q_learn() :
         # epsilon = soft_max(current, iter)
         discount = Map.discount
         print_states = Map.print_states
-
+        (cx, cy) = current
         q =[]
-        for move in get_legal_moves(current[0],current[1]):
-            si = get_features(move[0], move[1])
-            q.append((move[0], move[1], get_q(si,w)))
-        
+        for m in get_legal_moves(cx, cy):
+            si = get_features(m[0], m[1])
+            q.append((m[0], m[1], get_q(si,w)))
+
         r = random.random()
 
         movement_q = (0,0,0)
         if r < epsilon:
             r = random.randint(0, len(q)-1)
             movement_q = q[r]
-            
+
         else:
             for i in q :
-                print (i)
                 if (i[2] > movement_q[2] or movement_q == (0,0,0)):
                     movement_q = i
-        Map.move_bot(movement_q[0], movement_q[1])
-        current= (movement_q[0], movement_q[1])
+
+        (mx, my, mq) = movement_q
+        if (mx, my) == (cx + 1, cy) : # move right
+            print("true")
+            move(actions[3])
+        elif (mx, my) == (cx - 1, cy) : # move left
+            move(actions[1])
+        elif (mx, my) == (cx, cy + 1) : # move down
+            move(actions(2))
+        elif (mx, my) == (cx, cy - 1) : # move down
+            move(actions[1])
+        else :
+            move(actions[4])
+
+        #current= (movement_q[0], movement_q[1])
         print("Moved to: ", movement_q[0], movement_q[1])
 
         r =1
