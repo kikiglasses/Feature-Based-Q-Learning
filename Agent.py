@@ -23,11 +23,10 @@ print("Activs: ", Map.activs)
 discount = Map.discount
 print_states = Map.print_states
 
-### Reward Function
 learning_rate = 0.5
 score = 1
 epsilon = 0.1
-episodes = 10000
+episodes = 1000
 steps = 300
 
 
@@ -42,17 +41,6 @@ s = np.array([1, #State vector
 w = np.zeros(np.shape(s))
 
 visited = np.zeros((Map.x, Map.y))
-
-def get_features(x,y) :
-    feature_vector =  np.array([1,
-        get_num_adj(x,y),
-        goal_dist(x,y),
-        haz_dist(x,y),
-        num_haz(),
-        activ_dist(x,y),
-        num_unact_channels()])
-    return feature_vector
-
 
 
 def get_num_adj(x,y):
@@ -76,6 +64,7 @@ def get_num_adj(x,y):
                 n += 1
     return n
 
+
 def goal_dist(x,y):
     # return the Manhattan distance from the closest goal
     min_dist = -1
@@ -86,8 +75,8 @@ def goal_dist(x,y):
             min_dist = temp
     return min_dist
 
-# Removed goal_direction as it is captured by goal_dist()
 
+# Removed goal_direction as it is captured by goal_dist()
 def haz_dist(x,y):
     # return the Manhattan distance from the nearest hazard
     min_dist = -1
@@ -100,9 +89,11 @@ def haz_dist(x,y):
         return 0
     return 1
 
+
 # Maybe not a very useful feature
 def num_haz():
     return len(list(Map.hazards.keys()))
+
 
 def activ_dist(x,y):
     # return Manhattan distance of closest unactivated activator
@@ -115,9 +106,22 @@ def activ_dist(x,y):
                 min_dist = temp
     return min_dist
 
+
 def num_unact_channels():      ### slight change from initial proposal
     # return number of channels yet to be activated
     return(len(list(Map.activs.keys())))
+
+
+def get_features(x,y) :
+    feature_vector =  np.array([1,
+        get_num_adj(x,y),
+        goal_dist(x,y),
+        haz_dist(x,y),
+        num_haz(),
+        activ_dist(x,y),
+        num_unact_channels()])
+    return feature_vector
+
 
 def get_legal_moves(x,y):
     legal_moves = []
@@ -200,45 +204,6 @@ def move(action):
     s2 = current
     return s, action, s2
 
-def random_run() : #Random agent movements for testing
-    global current
-    iter = 1
-    while iter <= episodes :
-        if Map.flag is None:
-            quit()
-        if Map.flag is True:
-            continue
-        restart_check(iter)
-        wait()
-
-        random.seed(a=None)
-        r = random.randint(0,3)
-        move(actions[r])
-
-def test_run() :
-    def time_move(action) :
-        move(action)
-        time.sleep(0.3)
-    time_move(actions[3])
-    time_move(actions[0])
-    time_move(actions[0])
-    time_move(actions[0])
-    time_move(actions[0])
-    time_move(actions[2])
-    time_move(actions[2])
-    time_move(actions[2])
-    time_move(actions[3])
-    time_move(actions[3])
-    time_move(actions[3])
-    time_move(actions[3])
-    time_move(actions[1])
-    time_move(actions[1])
-    time_move(actions[1])
-    time_move(actions[1])
-    time_move(actions[0])
-    time_move(actions[0])
-    time_move(actions[0])
-    time_move(actions[0])
 
 def restart_check(iter):
     global alpha, score
@@ -259,16 +224,28 @@ def wait():
 def get_q(s,w) :
     return np.dot(w.T,s)
 
-def reward(x,y):
-    pass
+
+def reward(x,y, moves):
+    r = 0
+    if grid[y][x] == '3':
+        r += 1000
+    if grid[y][x]== '4':
+        r += -1000
+    if grid[y][x] == '5':
+        r += 100
+    r += -moves
+    return r
 
 
 def q_learn() :
     global alpha, discount, current, score, epsilon, episodes, print_states, iter, w
-
+    
     iter = 1
+    moves = 0
 
+    Map.restart_game()
     while iter <= episodes:
+        print(grid)
         # Agent reached a goal/hazard
         restart_check(iter)
         wait()
@@ -314,11 +291,29 @@ def q_learn() :
         current= (selected_q[0], selected_q[1])
         print("Moved to: ", current)
 
-        r = 0
-
-        w += (learning_rate * (r + discount * get_q(s, w) - selected_q[2])) * s 
+        print(reward(current[0], current[1], moves))
+        w += (learning_rate * (reward(current[0], current[1], moves) + discount * get_q(s, w) - selected_q[2])) * s 
         print(w)
+        iter += 1
+        moves +=1
 
+
+'''
+def random_run() : #Random agent movements for testing
+    global current
+    iter = 1
+    while iter <= episodes :
+        if Map.flag is None:
+            quit()
+        if Map.flag is True:
+            continue
+        restart_check(iter)
+        wait()
+
+        random.seed(a=None)
+        r = random.randint(0,3)
+        move(actions[r])'''
+'''
 # def wasd_run():
 #     def key_pressed(event):
 #         if event.char == "W" :
@@ -335,7 +330,7 @@ def q_learn() :
 #             return
 #         iter = iter + 1
 #         return
-        
+ 
 
     # Map.board.bind('<Key>', key_pressed)
 
@@ -348,7 +343,33 @@ def q_learn() :
         #     move(actions[3])
         # if key_press == "Space" :
         #     move(actions[4])
-
+'''
+'''
+def test_run() :
+    def time_move(action) :
+        move(action)
+        time.sleep(0.3)
+    time_move(actions[3])
+    time_move(actions[0])
+    time_move(actions[0])
+    time_move(actions[0])
+    time_move(actions[0])
+    time_move(actions[2])
+    time_move(actions[2])
+    time_move(actions[2])
+    time_move(actions[3])
+    time_move(actions[3])
+    time_move(actions[3])
+    time_move(actions[3])
+    time_move(actions[1])
+    time_move(actions[1])
+    time_move(actions[1])
+    time_move(actions[1])
+    time_move(actions[0])
+    time_move(actions[0])
+    time_move(actions[0])
+    time_move(actions[0])
+'''
 
 t = threading.Thread(target=q_learn)
 t.daemon = True

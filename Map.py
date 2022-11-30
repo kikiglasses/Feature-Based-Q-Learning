@@ -7,6 +7,7 @@ from PIL import ImageTk
 import os
 import re
 
+
 master = Tk()
 master.wm_title("Dynamic Hazard Grid World")
 
@@ -22,8 +23,6 @@ hazard_pic = ImageTk.PhotoImage(image=Image.open(path+'zombie1.png'))
 agent_pic = ImageTk.PhotoImage(image=Image.open(path+'steve1.png'))
 activ_pic = ImageTk.PhotoImage(image=Image.open(path+'lever1.png'))
 deactiv_pic = ImageTk.PhotoImage(image=Image.open(path+'trapdoor1.png'))
-
-
 
 
 triangle_size = 0.3
@@ -341,9 +340,9 @@ qframe = Frame(master)
 qframe.pack()
 e = Entry(qframe, width=5)
 e.pack(side=LEFT)
-e.insert(0, "0.8")
+e.insert(0, "0.4")
 
-discount = 0.8
+discount = 0.4
 
 def getDiscount(event):
     global discount
