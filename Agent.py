@@ -259,6 +259,10 @@ def wait():
 def get_q(s,w) :
     return np.dot(w.T,s)
 
+def reward(x,y):
+    pass
+
+
 def q_learn() :
     global alpha, discount, current, score, epsilon, episodes, print_states, iter, w
 
@@ -274,45 +278,47 @@ def q_learn() :
         print_states = Map.print_states
         (cx, cy) = current
         q =[]
+        print(get_legal_moves(cx, cy))
         for m in get_legal_moves(cx, cy):
             si = get_features(m[0], m[1])
             q.append((m[0], m[1], get_q(si,w)))
 
         r = random.random()
 
-        movement_q = (0,0,0)
+        selected_q = (0,0,0)
         if r < epsilon:
             r = random.randint(0, len(q)-1)
-            movement_q = q[r]
+            selected_q = q[r]
 
         else:
             for i in q :
-                if (i[2] > movement_q[2] or movement_q == (0,0,0)):
-                    movement_q = i
+                if (i[2] > selected_q[2] or selected_q == (0,0,0)):
+                    selected_q = i
 
-        (mx, my, mq) = movement_q
+        (mx, my, mq) = selected_q
         if (mx, my) == (cx + 1, cy) : # move right
-            print("true")
+            #print("true")
             move(actions[3])
         elif (mx, my) == (cx - 1, cy) : # move left
             move(actions[1])
         elif (mx, my) == (cx, cy + 1) : # move down
-            move(actions(2))
+            move(actions[2])
         elif (mx, my) == (cx, cy - 1) : # move down
             move(actions[1])
         else :
             move(actions[4])
 
-        #current= (movement_q[0], movement_q[1])
-        print("Moved to: ", movement_q[0], movement_q[1])
+        s = get_features(selected_q[0], selected_q[1])
+        print(s)
 
-        r =1
+        current= (selected_q[0], selected_q[1])
+        print("Moved to: ", current)
 
-        w += (learning_rate * (r + discount * get_q(s, w) - movement_q[2])) * s 
-        print
+        r = 0
 
-        
-    
+        w += (learning_rate * (r + discount * get_q(s, w) - selected_q[2])) * s 
+        print(w)
+
 # def wasd_run():
 #     def key_pressed(event):
 #         if event.char == "W" :
