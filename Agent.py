@@ -132,7 +132,7 @@ def get_legal_moves(x,y):
 
 
 def move(action):
-    global current, score
+    global current, score, visited
     s = current
     (curr_x, curr_y) = current
 
@@ -194,7 +194,7 @@ def move(action):
 
 
 def restart_check(iter):
-    global alpha, score, current
+    global alpha, score, current, visited
     if Map.restart is True:
         current = Map.start
         visited[current[0]][current[1]] += 1
@@ -213,6 +213,7 @@ def get_q(s,w) :
 
 
 def reward(x,y):
+    global visited
     r = 0
     if str(grid[y][x]) == '3':
         r += 100

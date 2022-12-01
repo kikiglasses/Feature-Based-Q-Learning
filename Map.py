@@ -67,7 +67,7 @@ else:
 
     board.pack(side=LEFT)
 
-    grid = [["0" for row in range(x)] for col in range(y)]
+    grid = [['0' for row in range(x)] for col in range(y)]
     item_grid = [[0 for row in grid[0]] for col in grid]
   
 
@@ -111,7 +111,7 @@ else:
             elif var.get() == "hazard":
                 item_grid[y][x] = board.create_image(
                     x*Width+Width/2, y*Width+Width/2, image=hazard_pic)
-                grid[y][x] = '4'
+                grid[y][x] = '4(1,0)'
             elif var.get() == "activator":
                 item_grid[y][x] = board.create_image(
                     x*Width+Width/2, y*Width+Width/2, image=activ_pic)
@@ -233,21 +233,6 @@ def visualize_grid():
             item_grid[i][j] = board.create_image(i*Width+Width/2, j*Width+Width/2, image=deactiv_pic)
 
 
-def set_color(state, action, val):
-    global cell_score_min, cell_score_max
-    triangle = tri_objects[state][action]
-    text = text_objects[state][action]
-    green_dec = int(min(255, max(0, (val - cell_score_min) *
-                    255.0 / (cell_score_max - cell_score_min))))
-    red = hex(255-green_dec)[2:]
-    green = hex(green_dec)[2:]
-    if len(green) == 1:
-        green += "0"
-    if len(red) == 1:
-        red += "0"
-    color = "#" + red + green + "00"
-    board.itemconfigure(triangle, fill=color)
-    board.itemconfigure(text, text=str(format(val, '.2f')), fill="black")
 
 
 def move_bot(new_x, new_y):
@@ -258,6 +243,7 @@ def move_bot(new_x, new_y):
     move_hazards()
     
 def move_hazards():
+    global player, score, robot, restart, activs, deactivs, xactivs, xdeactivs, hazards
     for k,v in hazards.items():
 
         # Gets current location and next location
@@ -278,11 +264,11 @@ def move_hazards():
         board.delete(item_grid[curr_x][curr_y])
         item_grid[curr_x][curr_y] = 0
 
-        grid[curr_x][curr_y] = 0
-        grid[new_x][new_y] = 4
+        grid[curr_x][curr_y] = '0'
+        grid[new_x][new_y] = '4'
 
 def restart_game():
-    global player, score, robot, restart, activs, deactivs, xactivs, xdeactivs
+    global player, score, robot, restart, activs, deactivs, xactivs, xdeactivs, hazards
     player = start
     score = 1
     restart = False
@@ -298,7 +284,21 @@ def restart_game():
             grid[i][j] = '6'
             item_grid[i][j] = board.create_image(i*Width+Width/2, j*Width+Width/2, image=deactiv_pic)
         deactivs[k] = xdeactivs.pop(k)
-        # Hazards reset to position 1
+    # Hazards reset to position 1
+    for k,v in hazards.items():
+        # Gets current location and next location
+        (curr_x, curr_y) = v[hazard_ind[k]]
+        (new_x, new_y) = v[0]
+        hazard_dir[k] = 1
+        hazard_ind[k] = 0
+        
+        # Modify the grid to show changes
+        item_grid[new_x][new_y] = board.create_image(new_x*Width+Width/2, new_y*Width+Width/2, image=hazard_pic)
+        board.delete(item_grid[curr_x][curr_y])
+        item_grid[curr_x][curr_y] = 0
+
+        grid[curr_x][curr_y] = '0'
+        grid[new_x][new_y] = '4'
 
 
 visualize_grid()
