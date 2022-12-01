@@ -289,7 +289,7 @@ def q_learn() :
             q.append((m[0], m[1], get_q(si,w)))
 
         r = random.random()
-        
+
         selected_q = (0,0,0)
         if r < epsilon:
             r = random.randint(0, len(q)-1)
@@ -435,7 +435,7 @@ def test_run() :
     time_move(actions[3])
 
 
-t = threading.Thread(target=q_learn)
+t = threading.Thread(target=random_run)
 t.daemon = True
 t.start()
 Map.begin()

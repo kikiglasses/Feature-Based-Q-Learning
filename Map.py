@@ -181,7 +181,7 @@ for i in range(y):
         elif grid[i][j] == "2":
             start = (j, i)
         elif grid[i][j] == "3":
-            goals.append((i, j))
+            goals.append((j, i))
 
         # regex check -- stores 'i' from '4(i,j)' into channel.group(1), 'j' into channel.group(2)
         # If matches the regex (begins with 4, contains a pair of brackets, can contain two comma seperated strings between the breackets)
@@ -190,22 +190,25 @@ for i in range(y):
                 hazards[channel.group(1)] = []
                 hazard_dir[channel.group(1)] = 1
                 hazard_ind[channel.group(1)] = 0
-            hazards[channel.group(1)].append((i, j))
-            grid[i][j] = '0'
+                hazards[channel.group(1)].append((j, i))
+                grid[i][j] = '4'
+            else :
+                hazards[channel.group(1)].append((j, i))
+                grid[i][j] = '0'
 
         # regex check -- stores 'x' from '5(x)' into channel.group(1)
         # If matches the regex (begins with 5, contains a pair of brackets, can contain a string between the breackets)
         elif channel := re.search('5\((.*)\)', grid[i][j]):
             if channel.group(1) not in activs.keys():
                 activs[channel.group(1)] = []
-            activs[channel.group(1)].append((i,j))
+            activs[channel.group(1)].append((j,i))
             grid[i][j] = '5'
 
         # regex check same as above but for 6
         elif channel := re.search('6\((.*)\)', grid[i][j]):
             if channel.group(1) not in deactivs.keys():
                 deactivs[channel.group(1)] = []
-            deactivs[channel.group(1)].append((i,j))
+            deactivs[channel.group(1)].append((j,i))
             grid[i][j] = '6'
 
 player = start
@@ -227,9 +230,9 @@ def visualize_grid():
     #print(hazards)
     for k,v in hazards.items(): # Move to player update function
         (i,j) = v[0]
-        item_grid[i][j] = board.create_image(j*Width+Width/2, i*Width+Width/2, image=hazard_pic)
+        item_grid[i][j] = board.create_image(i*Width+Width/2, j*Width+Width/2, image=hazard_pic)
     for (i,j) in goals:
-        item_grid[i][j] = board.create_image(j*Width+Width/2, i*Width+Width/2, image=goal_pic)
+        item_grid[i][j] = board.create_image(i*Width+Width/2, j*Width+Width/2, image=goal_pic)
     for (i, j) in walls:
         item_grid[i][j] = board.create_image(i*Width+Width/2, j*Width+Width/2, image=wall_pic)
     for a in list(activs.values()):
