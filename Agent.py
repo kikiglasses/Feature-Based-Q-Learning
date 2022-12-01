@@ -23,7 +23,7 @@ print("Activs: ", Map.activs)
 discount = Map.discount
 print_states = Map.print_states
 
-learning_rate = 0.5
+learning_rate = 0.1
 score = 1
 epsilon = 0.1
 episodes = 1000
@@ -291,9 +291,8 @@ def q_learn() :
         s = get_features(selected_q[0], selected_q[1])
         print(s)
 
-        current= (selected_q[0], selected_q[1])
+        #current= (selected_q[0], selected_q[1])
         print("Moved to: ", current)
-
         print(reward(current[0], current[1], moves))
         w += (learning_rate * (reward(current[0], current[1], moves) + discount * get_q(s, w) - selected_q[2])) * s 
         print(w)
