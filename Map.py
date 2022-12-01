@@ -190,8 +190,11 @@ for i in range(y):
                 hazards[channel.group(1)] = []
                 hazard_dir[channel.group(1)] = 1
                 hazard_ind[channel.group(1)] = 0
-            hazards[channel.group(1)].append((j, i))
-            grid[i][j] = '4'
+                hazards[channel.group(1)].append((j, i))
+                grid[i][j] = '4'
+            else :
+                hazards[channel.group(1)].append((j, i))
+                grid[i][j] = '0'
 
         # regex check -- stores 'x' from '5(x)' into channel.group(1)
         # If matches the regex (begins with 5, contains a pair of brackets, can contain a string between the breackets)
@@ -218,6 +221,8 @@ restart = False
 def visualize_grid():
     global specials, walls, Width, x, y, player
     #print ("activs: ", list(activs.values()))
+    print(grid)
+    print(item_grid)
     for i in range(x):
         for j in range(y):
             board.create_rectangle(
@@ -226,7 +231,7 @@ def visualize_grid():
     for k,v in hazards.items(): # Move to player update function
         (i,j) = v[0]
         item_grid[i][j] = board.create_image(i*Width+Width/2, j*Width+Width/2, image=hazard_pic)
-    for (i, j) in goals:
+    for (i,j) in goals:
         item_grid[i][j] = board.create_image(i*Width+Width/2, j*Width+Width/2, image=goal_pic)
     for (i, j) in walls:
         item_grid[i][j] = board.create_image(i*Width+Width/2, j*Width+Width/2, image=wall_pic)

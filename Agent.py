@@ -20,12 +20,13 @@ last = (-1,-1)
 walls = Map.walls
 
 goals = Map.goals
-'''
+
 print("Goal: ", goals)
 print("Walls: ", walls)
+print("Hazards", Map.hazards)
 print("Deactivs: ", Map.deactivs)
 print("Activs: ", Map.activs)
-'''
+
 discount = Map.discount
 print_states = Map.print_states
 
@@ -244,7 +245,6 @@ def get_q(s,w) :
 
 def reward(x,y):
     global last, visited
-    global visited
     r = 0
     count = 0
     if str(grid[y][x]) == '3':
@@ -281,19 +281,17 @@ def q_learn() :
         restart_check(iter)
         wait()
         epsilon = Map.w2.get()
-
         # epsilon = soft_max(current, iter)
         discount = Map.discount
         print_states = Map.print_states
         (cx, cy) = current
         q =[]
-        # print(get_legal_moves(cx, cy))
         for m in get_legal_moves(cx, cy):
             si = get_features(m[0], m[1])
             q.append((m[0], m[1], get_q(si,w)))
 
         r = random.random()
-        #print(r)
+
         selected_q = (0,0,0)
         if r < epsilon:
             r = random.randint(0, len(q)-1)
@@ -441,7 +439,7 @@ def test_run() :
     time_move(actions[3])
 
 
-t = threading.Thread(target=q_learn)
+t = threading.Thread(target=random_run)
 t.daemon = True
 t.start()
 Map.begin()
