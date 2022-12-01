@@ -35,7 +35,6 @@ s = np.array([1, #State vector
                 0,
                 0,
                 0,
-                0,
                 0])
 
 w = np.ones(np.shape(s))
@@ -102,7 +101,6 @@ def num_unact_channels():      ### slight change from initial proposal
 def get_features(x,y) :
     haz_count = nearby_haz_count(x,y)
     feature_vector =  np.array([1,
-        get_num_adj(x,y),
         goal_dist(x,y),
         haz_count[1],
         haz_count[2],
@@ -200,7 +198,7 @@ def restart_check(iter):
     if Map.restart is True:
         current = Map.start
         visited[current[0]][current[1]] += 1
-        #Map.move_bot(current[0], current[1])
+        Map.move_bot(current[0], current[1])
         Map.restart = False
         Map.restart_game()
         score = 1
@@ -221,23 +219,27 @@ def reward(x,y):
     elif str(grid[y][x]) == '4':
         r += -100
     elif str(grid[y][x]) == '5':
-        r += 50
-    r += -5
+        r += 150
+    r += -1
     return r
 
 
 def q_learn() :
-    global alpha, discount, score, epsilon, episodes, print_states, iter, w
+    global alpha, current, discount, score, epsilon, episodes, print_states, iter, w, s
     
     iter = 1
     moves = 0
 
     Map.restart_game()
     while iter <= episodes:
+        if Map.flag is None:
+            quit()
+        if Map.flag is True:
+            continue
         # Agent reached a goal/hazard
         restart_check(iter)
         wait()
-        # epsilon = Map.w2.get()
+        epsilon = Map.w2.get()
         print("epsilon:", epsilon)
         # epsilon = soft_max(current, iter)
         discount = Map.discount
@@ -268,12 +270,11 @@ def q_learn() :
             move(actions[1])
         elif (mx, my) == (cx, cy + 1) : # move down
             move(actions[2])
-        elif (mx, my) == (cx, cy - 1) : # move down
-            move(actions[1])
+        elif (mx, my) == (cx, cy - 1) : # move up
+            move(actions[0])
         else :
             move(actions[4])
-
-        current = (selected_q[0], selected_q[1])
+        
         s = get_features(selected_q[0], selected_q[1])
         # print(s)
         # print("Moved to: ", current)
@@ -285,8 +286,6 @@ def q_learn() :
         iter += 1
         moves +=1
 
-
-'''
 def random_run() : #Random agent movements for testing
     global current
     iter = 1
@@ -300,8 +299,8 @@ def random_run() : #Random agent movements for testing
 
         random.seed(a=None)
         r = random.randint(0,3)
-        move(actions[r])'''
-'''
+        move(actions[r])
+
 # def wasd_run():
 #     def key_pressed(event):
 #         if event.char == "W" :
@@ -331,10 +330,12 @@ def random_run() : #Random agent movements for testing
         #     move(actions[3])
         # if key_press == "Space" :
         #     move(actions[4])
-'''
-'''
+
+
 def test_run() :
+    global current
     def time_move(action) :
+        restart_check(1)
         move(action)
         time.sleep(0.3)
     time_move(actions[3])
@@ -357,7 +358,39 @@ def test_run() :
     time_move(actions[0])
     time_move(actions[0])
     time_move(actions[0])
-'''
+    time_move(actions[0])
+    time_move(actions[0])
+    time_move(actions[0])
+    time_move(actions[0])
+    time_move(actions[1])
+    
+    time_move(actions[3])
+    time_move(actions[0])
+    time_move(actions[0])
+    time_move(actions[0])
+    time_move(actions[0])
+    time_move(actions[2])
+    time_move(actions[2])
+    time_move(actions[2])
+    time_move(actions[3])
+    time_move(actions[3])
+    time_move(actions[3])
+    time_move(actions[3])
+    time_move(actions[1])
+    time_move(actions[1])
+    time_move(actions[1])
+    time_move(actions[1])
+    time_move(actions[0])
+    time_move(actions[0])
+    time_move(actions[0])
+    time_move(actions[0])
+    time_move(actions[0])
+    time_move(actions[0])
+    time_move(actions[0])
+    time_move(actions[0])
+    time_move(actions[1])
+    time_move(actions[3])
+
 
 t = threading.Thread(target=q_learn)
 t.daemon = True

@@ -279,7 +279,7 @@ def move_hazards():
         grid[new_x][new_y] = 4
 
 def restart_game():
-    global player, score, robot, restart
+    global player, score, robot, restart, activs, deactivs, xactivs, xdeactivs
     player = start
     score = 1
     restart = False
@@ -383,7 +383,7 @@ Label(text="").pack()
 q4frame = Frame(master)
 q4frame.pack()
 w2 = Scale(q4frame, from_=0.0, to=0.8, orient=HORIZONTAL, resolution=0.05)
-w2.set(0.1)
+w2.set(0.5)
 w2.pack()
 Label(text="Epsilon").pack()
 Label(text="").pack()
