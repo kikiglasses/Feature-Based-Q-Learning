@@ -20,12 +20,13 @@ last = (-1,-1)
 walls = Map.walls
 
 goals = Map.goals
-'''
+
 print("Goal: ", goals)
 print("Walls: ", walls)
+print("Hazards", Map.hazards)
 print("Deactivs: ", Map.deactivs)
 print("Activs: ", Map.activs)
-'''
+
 discount = Map.discount
 print_states = Map.print_states
 
@@ -106,7 +107,7 @@ def num_haz():
     return len(list(Map.hazards.keys()))
 
 def inverse_square(num) :
-    return 1/(pow(num + 0.1,2))
+    return 1/(num+1)#(pow(num + 0.1,2))
 
 
 def activ_dist(x,y):
@@ -243,7 +244,6 @@ def get_q(s,w) :
 
 def reward(x,y):
     global last, visited
-    global visited
     r = 0
     count = 0
     if str(grid[y][x]) == '3':
@@ -254,7 +254,6 @@ def reward(x,y):
         r += 150
     (last_x,last_y) = last
     lm = get_legal_moves(last_x, last_y)
-    print(visited)
     for (x1,y1) in lm :
         count += visited[y1][x1]
     if visited[last_y][last_x] > count/len(lm) :
@@ -280,19 +279,17 @@ def q_learn() :
         restart_check(iter)
         wait()
         epsilon = Map.w2.get()
-        print("epsilon:", epsilon)
         # epsilon = soft_max(current, iter)
         discount = Map.discount
         print_states = Map.print_states
         (cx, cy) = current
         q =[]
-        # print(get_legal_moves(cx, cy))
         for m in get_legal_moves(cx, cy):
             si = get_features(m[0], m[1])
             q.append((m[0], m[1], get_q(si,w)))
 
         r = random.random()
-        #print(r)
+        
         selected_q = (0,0,0)
         if r < epsilon:
             r = random.randint(0, len(q)-1)
