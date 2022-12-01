@@ -295,6 +295,7 @@ def restart_game():
             grid[i][j] = '6'
             item_grid[i][j] = board.create_image(i*Width+Width/2, j*Width+Width/2, image=deactiv_pic)
         deactivs[k] = xdeactivs.pop(k)
+        # Hazards reset to position 1
 
 
 visualize_grid()

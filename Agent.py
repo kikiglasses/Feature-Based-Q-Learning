@@ -45,24 +45,7 @@ visited = np.zeros((Map.x, Map.y))
 
 def get_num_adj(x,y):
     # return the number of passable adjacent tiles from x,y
-    n = 0
-    if x + 1 < Map.x : #check right
-        if (x + 1, y) not in walls :
-            if (x + 1, y) not in list(Map.deactivs.values()) :
-                n += 1
-    if x - 1 >= 0 : #check left
-        if (x - 1, y) not in walls :
-            if (x - 1, y) not in list(Map.deactivs.values()) :
-                n += 1
-    if y - 1 >= 0 : #check up
-        if (x, y - 1) not in walls :
-            if (x, y - 1) not in list(Map.deactivs.values()) :
-                n += 1
-    if y + 1 < Map.y : #check left
-        if (x, y + 1) not in walls :
-            if (x, y + 1) not in list(Map.deactivs.values()) :
-                n += 1
-    return n
+    return len(get_legal_moves(x,y))
 
 
 def goal_dist(x,y):
@@ -244,7 +227,7 @@ def reward(x,y):
 
 
 def q_learn() :
-    global discount, current, score, epsilon, episodes, print_states, iter, w
+    global alpha, discount, score, epsilon, episodes, print_states, iter, w
     
     iter = 1
     moves = 0
