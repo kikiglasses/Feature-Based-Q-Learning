@@ -11,6 +11,7 @@ policy_sign = ["^", "<", "v", ">"]
 states = []
 
 current = Map.start
+last = (-1,-1)
 walls = Map.walls
 
 goals = Map.goals
@@ -25,7 +26,7 @@ print_states = Map.print_states
 
 learning_rate = 0.01
 score = 1
-epsilon = 0.5
+epsilon = 0.25
 episodes = 1000
 steps = 300
 
@@ -35,11 +36,18 @@ s = np.array([1, #State vector
                 0,
                 0,
                 0,
-                0])
+                0,
+                0], dtype=float)
 
-w = np.ones(np.shape(s))
+w = np.array([1, #State vector
+                10,
+                -2,
+                -1,
+                5,
+                1,
+                -1], dtype=float)
 
-visited = np.zeros((Map.x, Map.y))
+visited = [[0 for row in range(Map.x)] for col in range(Map.y)]
 
 
 def get_num_adj(x,y):
@@ -57,6 +65,20 @@ def goal_dist(x,y):
             min_dist = dist
     return inverse_square(min_dist)
 
+def just_visited(x,y) :
+    return (1 if (x,y) == last else 0)
+
+# def goal_dist_bfs(x,y):
+#     explored_cells = [(x, y, 0)]
+#     distance = 0
+#     goal = goals[0]
+#     while goal != [(x,y) for (x,y,n) in explored_cells][distance]:
+#         distance += 1
+#         lm = get_legal_moves(explored_cells[distance][0],explored_cells[distance][1])[1:]
+#         for i in lm:
+#             if i not in [(x,y) for (x,y,n) in explored_cells]:
+#                 explored_cells.append(i[0],i[1], distance)
+#     return distance
 
     ### Feature changed - add to write-up
 def nearby_haz_count(x,y):
@@ -80,6 +102,7 @@ def num_haz():
 
 def inverse_square(num) :
     return 1/(pow(num + 0.1,2))
+
 
 def activ_dist(x,y):
     # return Manhattan distance of closest unactivated activator
@@ -105,12 +128,13 @@ def get_features(x,y) :
         haz_count[1],
         haz_count[2],
         activ_dist(x,y),
-        num_unact_channels()])
+        num_unact_channels(),
+        just_visited(x,y)])
     return feature_vector
 
 
 def get_legal_moves(x,y):
-    legal_moves = []
+    legal_moves = [(x,y)]
     # Add deactivatable walls to walls
     temp = walls.copy()
     for arr in Map.deactivs.values():
@@ -132,8 +156,8 @@ def get_legal_moves(x,y):
 
 
 def move(action):
-    global current, score
-    s = current
+    global current, score, last, visited
+    last = current
     (curr_x, curr_y) = current
 
     ### Checks move is valid for map
@@ -152,7 +176,7 @@ def move(action):
         temp.append(arr)
     # Check if move would take into a wall
     if current in temp:
-        current = s
+        current = last
     
     # Check for goal or hazard
     elif current in goals:
@@ -182,19 +206,19 @@ def move(action):
                 Map.xdeactivs[k] = Map.deactivs.pop(k)
         for k,v in Map.deactivs.copy().items() :
             if current in v:
-                current = s
+                current = last
 
     Map.move_bot(current[0], current[1])
 
     # Increments visited grid for new location
-    visited[current[0]][current[1]] += 1
+    visited[current[1]][current[0]] += 1
 
     s2 = current
-    return s, action, s2
+    return last, action, s2
 
 
 def restart_check(iter):
-    global alpha, score, current
+    global alpha, score, current, visited
     if Map.restart is True:
         current = Map.start
         visited[current[0]][current[1]] += 1
@@ -213,14 +237,24 @@ def get_q(s,w) :
 
 
 def reward(x,y):
-    r = 0
+    global last, visited
+    r = 1
+    count = 0
     if str(grid[y][x]) == '3':
         r += 100
     elif str(grid[y][x]) == '4':
         r += -100
     elif str(grid[y][x]) == '5':
         r += 150
-    r += -1
+    (last_x,last_y) = last
+    lm = get_legal_moves(last_x, last_y)
+    print(visited)
+    for (x1,y1) in lm :
+        count += visited[y1][x1]
+    if visited[last_y][last_x] > count/len(lm) :
+        r+= -1
+    else:
+        r+=1
     return r
 
 
@@ -279,10 +313,16 @@ def q_learn() :
         # print(s)
         # print("Moved to: ", current)
 
+        max_q = - math.inf
+        for m in get_legal_moves(selected_q[0], selected_q[1]):
+            si = get_features(m[0], m[1])
+            if get_q(si,w) > max_q :
+                max_q = get_q(si,w)
+
        # print(reward(current[0], current[1]))
-        w += (learning_rate * (reward(current[0], current[1]) + discount * get_q(s, w) - selected_q[2])) * s 
-        print(w)
-        print(s)
+        w += (learning_rate * (reward(current[0], current[1]) + discount * max_q - selected_q[2])) * s 
+        # print(w)
+        # print(s)
         iter += 1
         moves +=1
 

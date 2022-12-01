@@ -279,8 +279,7 @@ def move_hazards():
         grid[new_x][new_y] = 4
 
 def restart_game():
-    global player, score, robot, restart, activs, deactivs, xactivs, xdeactivs
-    player = start
+    global score, robot, restart, activs, deactivs, xactivs, xdeactivs
     score = 1
     restart = False
     board.coords(robot, start[0]*Width+Width/2, start[1]*Width+Width/2)
@@ -314,12 +313,22 @@ q1frame = Frame(master)
 q1frame.pack()
 b1 = Button(text="Play / Pause")
 
+rb = Button(text="Restart")
+
+
+
 def printName(event):
     global flag
     flag = not flag
 
+def restartButton(event) :
+    global restart
+    restart = True
+    
 b1.bind("<Button-1>", printName)
+rb.bind("<Button-1>", restartButton)
 b1.pack()
+rb.pack()
 
 #   Sliders for speed and Epsilon
 q3frame = Frame(master)
@@ -340,9 +349,9 @@ qframe = Frame(master)
 qframe.pack()
 e = Entry(qframe, width=5)
 e.pack(side=LEFT)
-e.insert(0, "0.4")
+e.insert(0, "0.5")
 
-discount = 0.4
+discount = 0.5
 
 def getDiscount(event):
     global discount
@@ -383,7 +392,7 @@ Label(text="").pack()
 q4frame = Frame(master)
 q4frame.pack()
 w2 = Scale(q4frame, from_=0.0, to=0.8, orient=HORIZONTAL, resolution=0.05)
-w2.set(0.5)
+w2.set(0.25)
 w2.pack()
 Label(text="Epsilon").pack()
 Label(text="").pack()
