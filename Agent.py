@@ -88,6 +88,9 @@ def goal_dist(location):
 
 # Removed goal_direction as it is captured by goal_dist()
 
+def haz_one_away(location):
+    pass
+
 def haz_two_away(location):
     # return the Manhattan distance from the nearest hazard
     (loc_x, loc_y) = location
