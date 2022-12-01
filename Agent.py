@@ -97,7 +97,7 @@ def num_haz():
     return len(list(Map.hazards.keys()))
 
 def inverse_square(num) :
-    return 1/(pow(num,2))
+    return 1/(pow(num+0.1,2))
 
 def activ_dist(x,y):
     # return Manhattan distance of closest unactivated activator
