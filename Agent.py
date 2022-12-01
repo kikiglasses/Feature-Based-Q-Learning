@@ -220,7 +220,7 @@ def reward(x,y):
         r += -100
     elif str(grid[y][x]) == '5':
         r += 150
-    r += -1
+    r += -5 * visited[x][y]
     return r
 
 
