@@ -251,6 +251,17 @@ def move_bot(new_x, new_y):
         board.coords(robot, new_x*Width+Width/2, new_y*Width+Width/2)
         player = (new_x, new_y)
     move_hazards()
+    # Check for goal or hazard
+    if player in goals:
+        restart = True
+        print("Success score = ", score)
+        return
+    for k,v in hazards.items():
+        print("current: ", player, ", hazard: ", v[hazard_ind[k]])
+        if player == v[hazard_ind[k]]:
+            restart = True
+            print("Fail score = ", score)
+            return
     
 def move_hazards():
     global player, score, robot, restart, activs, deactivs, xactivs, xdeactivs, hazards

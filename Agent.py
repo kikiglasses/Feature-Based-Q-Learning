@@ -188,18 +188,6 @@ def move(action):
     if current in temp:
         current = last
     
-    # Check for goal or hazard
-    elif current in goals:
-        Map.restart = True
-        print("Success score = ", score)
-        return
-    for k,v in Map.hazards.items():
-        print("current: ", current, ", hazard: ", v[Map.hazard_ind[k]])
-        if current == v[Map.hazard_ind[k]]:
-            Map.restart = True
-            print("Fail score = ", score)
-            return
-    
     # check for activators
     else:
         for k,v in Map.activs.copy().items() :# k = key (channel of activator), v = array of locations (x,y) for channel
