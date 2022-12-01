@@ -23,9 +23,9 @@ print("Activs: ", Map.activs)
 discount = Map.discount
 print_states = Map.print_states
 
-learning_rate = 0.1
+learning_rate = 0.01
 score = 1
-epsilon = 0.1
+epsilon = 0.5
 episodes = 1000
 steps = 300
 
@@ -38,7 +38,7 @@ s = np.array([1, #State vector
                 0,
                 0])
 
-w = np.zeros(np.shape(s))
+w = np.ones(np.shape(s))
 
 visited = np.zeros((Map.x, Map.y))
 
@@ -179,6 +179,7 @@ def move(action):
         print("Success score = ", score)
         return
     for k,v in Map.hazards.items():
+        print("current: ", current, ", hazard: ", v[Map.hazard_ind[k]])
         if current == v[Map.hazard_ind[k]]:
             Map.restart = True
             print("Fail score = ", score)
@@ -231,15 +232,15 @@ def get_q(s,w) :
     return np.dot(w.T,s)
 
 
-def reward(x,y, moves):
+def reward(x,y):
     r = 0
-    if grid[y][x] == '3':
-        r += 1000
-    if grid[y][x]== '4':
-        r += -1000
-    if grid[y][x] == '5':
+    if str(grid[y][x]) == '3':
         r += 100
-    r += -moves
+    elif str(grid[y][x]) == '4':
+        r += -100
+    elif str(grid[y][x]) == '5':
+        r += 20
+    r += -1
     return r
 
 
@@ -251,23 +252,23 @@ def q_learn() :
 
     Map.restart_game()
     while iter <= episodes:
-        print(grid)
         # Agent reached a goal/hazard
         restart_check(iter)
         wait()
         epsilon = Map.w2.get()
+        print("epsilon:", epsilon)
         # epsilon = soft_max(current, iter)
         discount = Map.discount
         print_states = Map.print_states
         (cx, cy) = current
         q =[]
-        print(get_legal_moves(cx, cy))
+        # print(get_legal_moves(cx, cy))
         for m in get_legal_moves(cx, cy):
             si = get_features(m[0], m[1])
             q.append((m[0], m[1], get_q(si,w)))
 
         r = random.random()
-
+        #print(r)
         selected_q = (0,0,0)
         if r < epsilon:
             r = random.randint(0, len(q)-1)
@@ -280,7 +281,6 @@ def q_learn() :
 
         (mx, my, mq) = selected_q
         if (mx, my) == (cx + 1, cy) : # move right
-            #print("true")
             move(actions[3])
         elif (mx, my) == (cx - 1, cy) : # move left
             move(actions[1])
@@ -291,14 +291,15 @@ def q_learn() :
         else :
             move(actions[4])
 
+        current = (selected_q[0], selected_q[1])
         s = get_features(selected_q[0], selected_q[1])
-        print(s)
+        # print(s)
+        # print("Moved to: ", current)
 
-        #current= (selected_q[0], selected_q[1])
-        print("Moved to: ", current)
-        print(reward(current[0], current[1], moves))
-        w += (learning_rate * (reward(current[0], current[1], moves) + discount * get_q(s, w) - selected_q[2])) * s 
+       # print(reward(current[0], current[1]))
+        w += (learning_rate * (reward(current[0], current[1]) + discount * get_q(s, w) - selected_q[2])) * s 
         print(w)
+        print(s)
         iter += 1
         moves +=1
 

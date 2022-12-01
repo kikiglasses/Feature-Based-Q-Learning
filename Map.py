@@ -175,7 +175,6 @@ for i in range(y):
             walls.append((j, i))
         elif grid[i][j] == "2":
             start = (j, i)
-            print(start)
         elif grid[i][j] == "3":
             goals.append((j, i))
 
@@ -347,7 +346,6 @@ discount = 0.4
 def getDiscount(event):
     global discount
     discount = float(e.get())
-    print(discount)
 
 
 b3 = Button(qframe, text="Discount")
