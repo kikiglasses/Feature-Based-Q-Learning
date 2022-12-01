@@ -86,8 +86,8 @@ else:
     2 = start
     3 = goal
     4 = hazard
-    5 = activator 
-    6 = deactivatable 
+    5 = activator
+    6 = deactivatable
     '''
 
     def create_item(event):
@@ -186,6 +186,7 @@ for i in range(y):
                 hazard_dir[channel.group(1)] = 1
                 hazard_ind[channel.group(1)] = 0
             hazards[channel.group(1)].append((j, i))
+            grid[i][j] = '4'
 
         # regex check -- stores 'x' from '5(x)' into channel.group(1)
         # If matches the regex (begins with 5, contains a pair of brackets, can contain a string between the breackets)
@@ -193,12 +194,14 @@ for i in range(y):
             if channel.group(1) not in activs.keys():
                 activs[channel.group(1)] = []
             activs[channel.group(1)].append((j,i))
+            grid[i][j] = '5'
 
         # regex check same as above but for 6
         elif channel := re.search('6\((.*)\)', grid[i][j]):
             if channel.group(1) not in deactivs.keys():
                 deactivs[channel.group(1)] = []
             deactivs[channel.group(1)].append((j,i))
+            grid[i][j] = '6'
 
 player = start
 tri_objects = {}
