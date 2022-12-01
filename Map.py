@@ -1,3 +1,8 @@
+## REFERENCES 
+## Adapted source code from 
+## Nitish Gupta (2022), GitHub Repository, (Source Code), Available at:
+## https://github.com/nitesh4146/Treasure-Hunters-Inc
+
 import time
 from tkinter import *
 from tkinter.filedialog import askopenfilename
@@ -67,7 +72,7 @@ else:
 
     board.pack(side=LEFT)
 
-    grid = [["0" for row in range(x)] for col in range(y)]
+    grid = [['0' for row in range(x)] for col in range(y)]
     item_grid = [[0 for row in grid[0]] for col in grid]
   
 
@@ -86,8 +91,8 @@ else:
     2 = start
     3 = goal
     4 = hazard
-    5 = activator 
-    6 = deactivatable 
+    5 = activator
+    6 = deactivatable
     '''
 
     def create_item(event):
@@ -111,7 +116,7 @@ else:
             elif var.get() == "hazard":
                 item_grid[y][x] = board.create_image(
                     x*Width+Width/2, y*Width+Width/2, image=hazard_pic)
-                grid[y][x] = '4'
+                grid[y][x] = '4(1,0)'
             elif var.get() == "activator":
                 item_grid[y][x] = board.create_image(
                     x*Width+Width/2, y*Width+Width/2, image=activ_pic)
@@ -186,6 +191,7 @@ for i in range(y):
                 hazard_dir[channel.group(1)] = 1
                 hazard_ind[channel.group(1)] = 0
             hazards[channel.group(1)].append((j, i))
+            grid[i][j] = '4'
 
         # regex check -- stores 'x' from '5(x)' into channel.group(1)
         # If matches the regex (begins with 5, contains a pair of brackets, can contain a string between the breackets)
@@ -193,12 +199,14 @@ for i in range(y):
             if channel.group(1) not in activs.keys():
                 activs[channel.group(1)] = []
             activs[channel.group(1)].append((j,i))
+            grid[i][j] = '5'
 
         # regex check same as above but for 6
         elif channel := re.search('6\((.*)\)', grid[i][j]):
             if channel.group(1) not in deactivs.keys():
                 deactivs[channel.group(1)] = []
             deactivs[channel.group(1)].append((j,i))
+            grid[i][j] = '6'
 
 player = start
 tri_objects = {}
@@ -230,21 +238,6 @@ def visualize_grid():
             item_grid[i][j] = board.create_image(i*Width+Width/2, j*Width+Width/2, image=deactiv_pic)
 
 
-def set_color(state, action, val):
-    global cell_score_min, cell_score_max
-    triangle = tri_objects[state][action]
-    text = text_objects[state][action]
-    green_dec = int(min(255, max(0, (val - cell_score_min) *
-                    255.0 / (cell_score_max - cell_score_min))))
-    red = hex(255-green_dec)[2:]
-    green = hex(green_dec)[2:]
-    if len(green) == 1:
-        green += "0"
-    if len(red) == 1:
-        red += "0"
-    color = "#" + red + green + "00"
-    board.itemconfigure(triangle, fill=color)
-    board.itemconfigure(text, text=str(format(val, '.2f')), fill="black")
 
 
 def move_bot(new_x, new_y):
@@ -255,6 +248,7 @@ def move_bot(new_x, new_y):
     move_hazards()
     
 def move_hazards():
+    global player, score, robot, restart, activs, deactivs, xactivs, xdeactivs, hazards
     for k,v in hazards.items():
 
         # Gets current location and next location
@@ -275,11 +269,12 @@ def move_hazards():
         board.delete(item_grid[curr_x][curr_y])
         item_grid[curr_x][curr_y] = 0
 
-        grid[curr_x][curr_y] = 0
-        grid[new_x][new_y] = 4
+        grid[curr_x][curr_y] = '0'
+        grid[new_x][new_y] = '4'
 
 def restart_game():
-    global score, robot, restart, activs, deactivs, xactivs, xdeactivs
+    global player, score, robot, restart, activs, deactivs, xactivs, xdeactivs, hazards
+    player = start
     score = 1
     restart = False
     board.coords(robot, start[0]*Width+Width/2, start[1]*Width+Width/2)
@@ -294,7 +289,21 @@ def restart_game():
             grid[i][j] = '6'
             item_grid[i][j] = board.create_image(i*Width+Width/2, j*Width+Width/2, image=deactiv_pic)
         deactivs[k] = xdeactivs.pop(k)
-        # Hazards reset to position 1
+    # Hazards reset to position 1
+    for k,v in hazards.items():
+        # Gets current location and next location
+        (curr_x, curr_y) = v[hazard_ind[k]]
+        (new_x, new_y) = v[0]
+        hazard_dir[k] = 1
+        hazard_ind[k] = 0
+        
+        # Modify the grid to show changes
+        item_grid[new_x][new_y] = board.create_image(new_x*Width+Width/2, new_y*Width+Width/2, image=hazard_pic)
+        board.delete(item_grid[curr_x][curr_y])
+        item_grid[curr_x][curr_y] = 0
+
+        grid[curr_x][curr_y] = '0'
+        grid[new_x][new_y] = '4'
 
 
 visualize_grid()

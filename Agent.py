@@ -1,3 +1,8 @@
+## REFERENCES 
+## Adapted source code from 
+## Nitish Gupta (2022), GitHub Repository, (Source Code), Available at:
+## https://github.com/nitesh4146/Treasure-Hunters-Inc
+
 import numpy as np
 import math as math
 import Map
@@ -27,7 +32,7 @@ print_states = Map.print_states
 learning_rate = 0.01
 score = 1
 epsilon = 0.25
-episodes = 1000
+episodes = 10000
 steps = 300
 
 
@@ -238,7 +243,8 @@ def get_q(s,w) :
 
 def reward(x,y):
     global last, visited
-    r = 1
+    global visited
+    r = 0
     count = 0
     if str(grid[y][x]) == '3':
         r += 100
