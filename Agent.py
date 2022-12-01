@@ -220,7 +220,7 @@ def reward(x,y):
         r += -100
     elif str(grid[y][x]) == '5':
         r += 150
-    r += -5 * visited[x][y]
+    #r += -5 * visited[x][y]
     return r
 
 
@@ -281,7 +281,7 @@ def q_learn() :
 
        # print(reward(current[0], current[1]))
         w += (learning_rate * (reward(current[0], current[1]) + discount * get_q(s, w) - selected_q[2])) * s 
-        print(w)
+        print(np.around(w))
         print(s)
         iter += 1
         moves +=1
