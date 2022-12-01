@@ -278,7 +278,7 @@ def move_hazards():
         grid[new_x][new_y] = '4'
 
 def restart_game():
-    global player, score, robot, restart, activs, deactivs, xactivs, xdeactivs, hazards
+    global player, score, robot, restart, activs, deactivs, xactivs, xdeactivs, hazards, hazard_ind, hazard_dir, item_grid, grid
     player = start
     score = 1
     restart = False
@@ -304,7 +304,9 @@ def restart_game():
         
         # Modify the grid to show changes
         item_grid[new_x][new_y] = board.create_image(new_x*Width+Width/2, new_y*Width+Width/2, image=hazard_pic)
+        print(item_grid[0][1])
         board.delete(item_grid[curr_x][curr_y])
+        print(item_grid[0][1])
         item_grid[curr_x][curr_y] = 0
 
         grid[curr_x][curr_y] = '0'
