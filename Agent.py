@@ -77,7 +77,11 @@ def goal_dist(x,y):
 
 
 # Removed goal_direction as it is captured by goal_dist()
-def haz_dist(x,y):
+
+def haz_one_away(location):
+    pass
+
+def haz_two_away(location):
     # return the Manhattan distance from the nearest hazard
     min_dist = -1
     for k,v in Map.hazards.items() :
