@@ -1,3 +1,8 @@
+## REFERENCES 
+## Adapted source code from 
+## Nitish Gupta (2022), GitHub Repository, (Source Code), Available at:
+## https://github.com/nitesh4146/Treasure-Hunters-Inc
+
 import time
 from tkinter import *
 from tkinter.filedialog import askopenfilename
