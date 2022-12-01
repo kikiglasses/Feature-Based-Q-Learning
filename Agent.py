@@ -4,12 +4,7 @@ import Map
 import threading
 import time
 import random
-import keyboard
 
-# grid = [[0, 0, 0, 0],
-#         [0, -99, 0, 0],
-#         [0, 0, 0, 0],
-#         [0, 0, 0, 0]]
 grid = Map.grid
 actions = Map.actions  # ["up", "left", "down", "right", "wait"]
 policy_sign = ["^", "<", "v", ">"]
@@ -25,21 +20,13 @@ print("Walls: ", walls)
 print("Deactivs: ", Map.deactivs)
 print("Activs: ", Map.activs)
 '''
-Q = {}
 discount = Map.discount
 print_states = Map.print_states
 
-### Reward Function
-alpha = 1
+learning_rate = 0.5
 score = 1
-move_reward = -0.04
-goal_reward = 1
-hazard_reward = -1
-move_pass = 0.8
-move_fail = 0.1
-move_action = [-1, 0, 1]
 epsilon = 0.1
-episodes = 10000
+episodes = 1000
 steps = 300
 
 
@@ -51,40 +38,43 @@ s = np.array([1, #State vector
                 0,
                 0])
 
-w = np.array([1, #Weight vector
-                1,
-                1,
-                1,
-                1,
-                1,
-                1])
+w = np.zeros(np.shape(s))
 
 visited = np.zeros((Map.x, Map.y))
 
-def get_num_adj(location):
-    # return the number of passable adjacent tiles
+
+def get_num_adj(x,y):
+    # return the number of passable adjacent tiles from x,y
     n = 0
-    (loc_x, loc_y) = location
-    if Map.grid[loc_x+1][loc_y] == "0":
-        n += 1
-    if Map.grid[loc_x-1][loc_y] == "0":
-        n += 1
-    if Map.grid[loc_x][loc_y+1] == "0":
-        n += 1
-    if Map.grid[loc_x][loc_y-1] == "0":
-        n += 1
+    if x + 1 < Map.x : #check right
+        if (x + 1, y) not in walls :
+            if (x + 1, y) not in list(Map.deactivs.values()) :
+                n += 1
+    if x - 1 >= 0 : #check left
+        if (x - 1, y) not in walls :
+            if (x - 1, y) not in list(Map.deactivs.values()) :
+                n += 1
+    if y - 1 >= 0 : #check up
+        if (x, y - 1) not in walls :
+            if (x, y - 1) not in list(Map.deactivs.values()) :
+                n += 1
+    if y + 1 < Map.y : #check left
+        if (x, y + 1) not in walls :
+            if (x, y + 1) not in list(Map.deactivs.values()) :
+                n += 1
     return n
 
-def goal_dist(location):
+
+def goal_dist(x,y):
     # return the Manhattan distance from the closest goal
-    (loc_x, loc_y) = location
     min_dist = -1
     for goal in goals:
         (goal_x, goal_y) = goal
-        temp = abs(goal_x - loc_x) + abs(goal_y - loc_y)
+        temp = abs(goal_x - x) + abs(goal_y - y)
         if (temp < min_dist or min_dist == -1):
             min_dist = temp
     return min_dist
+
 
 # Removed goal_direction as it is captured by goal_dist()
 
@@ -93,45 +83,69 @@ def haz_one_away(location):
 
 def haz_two_away(location):
     # return the Manhattan distance from the nearest hazard
-    (loc_x, loc_y) = location
     min_dist = -1
     for k,v in Map.hazards.items() :
-        (hazard_x, hazard_y) = v.values()[Map.hazard_ind[k]]
-        temp = abs(hazard_x - loc_x) + abs(hazard_y - loc_y)
+        (hazard_x, hazard_y) = v[Map.hazard_ind[k]]
+        temp = abs(hazard_x - x) + abs(hazard_y - y)
         if (temp < min_dist or min_dist == -1):
             min_dist = temp
     if (min_dist > 2 or min_dist == -1):
         return 0
     return 1
 
+
 # Maybe not a very useful feature
 def num_haz():
-    return len(Map.hazards)
+    return len(list(Map.hazards.keys()))
 
-def activ_dist(location):
+
+def activ_dist(x,y):
     # return Manhattan distance of closest unactivated activator
-    (loc_x, loc_y) = location
     min_dist = -1
     for k,v in Map.activs.items():
         for activ in v:
             (activ_x, activ_y) = activ
-            temp = abs(activ_x - loc_x) + abs(activ_y - loc_y)
+            temp = abs(activ_x - x) + abs(activ_y - y)
             if (temp < min_dist or min_dist == -1):
                 min_dist = temp
     return min_dist
 
+
 def num_unact_channels():      ### slight change from initial proposal
     # return number of channels yet to be activated
-    return(len(Map.activs.keys()))
+    return(len(list(Map.activs.keys())))
 
 
+def get_features(x,y) :
+    feature_vector =  np.array([1,
+        get_num_adj(x,y),
+        goal_dist(x,y),
+        haz_dist(x,y),
+        num_haz(),
+        activ_dist(x,y),
+        num_unact_channels()])
+    return feature_vector
 
-def init():
-    for i in range(Map.x):
-        for j in range(Map.y):
-            if (i, j) in walls:
-                continue
-            states.append((i, j))
+
+def get_legal_moves(x,y):
+    legal_moves = []
+    if x + 1 < Map.x : #check right
+        if (x + 1, y) not in walls :
+            if (x + 1, y) not in list(Map.deactivs.values()) :
+                legal_moves.append((x+1, y))
+    if x - 1 >= 0 : #check left
+        if (x - 1, y) not in walls :
+            if (x - 1, y) not in list(Map.deactivs.values()) :
+                legal_moves.append((x-1,y))
+    if y - 1 >= 0 : #check up
+        if (x, y - 1) not in walls :
+            if (x, y - 1) not in list(Map.deactivs.values()) :
+                legal_moves.append((x,y-1))
+    if y + 1 < Map.y : #check left
+        if (x, y + 1) not in walls :
+            if (x, y + 1) not in list(Map.deactivs.values()) :
+                legal_moves.append((x,y+1))
+    return legal_moves
 
 
 def move(action):
@@ -194,28 +208,104 @@ def move(action):
     s2 = current
     return s, action, s2
 
-def random_action(act):
-    random.seed(a=None)
-    r = random.random()
-    other_actions = []
-    for a in actions:
-        if a != act:
-            other_actions.append(a)
-    print(other_actions)
-    if r >= 1 - epsilon:
-        r2 = random.randint(0, 2)
-        print("Random action:", other_actions[r2])
-        return other_actions[r2]
 
-    else:
-        print("Best action")
-        return act
+def restart_check(iter):
+    global alpha, score
+    if Map.restart is True:
+        current = Map.start
+        visited[current[0]][current[1]] += 1
+        #Map.move_bot(current[0], current[1])
+        Map.restart = False
+        Map.restart_game()
+        alpha = pow(iter, -0.1)
+        score = 1
 
+
+def wait():
+    time.sleep((1.9*Map.w1.get() - 19.9) / -18)
+
+
+def get_q(s,w) :
+    return np.dot(w.T,s)
+
+
+def reward(x,y, moves):
+    r = 0
+    if grid[y][x] == '3':
+        r += 1000
+    if grid[y][x]== '4':
+        r += -1000
+    if grid[y][x] == '5':
+        r += 100
+    r += -moves
+    return r
+
+
+def q_learn() :
+    global alpha, discount, current, score, epsilon, episodes, print_states, iter, w
+    
+    iter = 1
+    moves = 0
+
+    Map.restart_game()
+    while iter <= episodes:
+        print(grid)
+        # Agent reached a goal/hazard
+        restart_check(iter)
+        wait()
+        epsilon = Map.w2.get()
+        # epsilon = soft_max(current, iter)
+        discount = Map.discount
+        print_states = Map.print_states
+        (cx, cy) = current
+        q =[]
+        print(get_legal_moves(cx, cy))
+        for m in get_legal_moves(cx, cy):
+            si = get_features(m[0], m[1])
+            q.append((m[0], m[1], get_q(si,w)))
+
+        r = random.random()
+
+        selected_q = (0,0,0)
+        if r < epsilon:
+            r = random.randint(0, len(q)-1)
+            selected_q = q[r]
+
+        else:
+            for i in q :
+                if (i[2] > selected_q[2] or selected_q == (0,0,0)):
+                    selected_q = i
+
+        (mx, my, mq) = selected_q
+        if (mx, my) == (cx + 1, cy) : # move right
+            #print("true")
+            move(actions[3])
+        elif (mx, my) == (cx - 1, cy) : # move left
+            move(actions[1])
+        elif (mx, my) == (cx, cy + 1) : # move down
+            move(actions[2])
+        elif (mx, my) == (cx, cy - 1) : # move down
+            move(actions[1])
+        else :
+            move(actions[4])
+
+        s = get_features(selected_q[0], selected_q[1])
+        print(s)
+
+        current= (selected_q[0], selected_q[1])
+        print("Moved to: ", current)
+
+        print(reward(current[0], current[1], moves))
+        w += (learning_rate * (reward(current[0], current[1], moves) + discount * get_q(s, w) - selected_q[2])) * s 
+        print(w)
+        iter += 1
+        moves +=1
+
+
+'''
 def random_run() : #Random agent movements for testing
     global current
     iter = 1
-    init()
-    print(current)
     while iter <= episodes :
         if Map.flag is None:
             quit()
@@ -226,10 +316,40 @@ def random_run() : #Random agent movements for testing
 
         random.seed(a=None)
         r = random.randint(0,3)
-        move(actions[r])
+        move(actions[r])'''
+'''
+# def wasd_run():
+#     def key_pressed(event):
+#         if event.char == "W" :
+#             move(actions[0])
+#         elif event.char == "A" :
+#             move(actions[1])
+#         elif event.char == "S" :
+#             move(actions[2])
+#         elif event.char == "D" :
+#             move(actions[3])
+#         elif event.char == " " :
+#             move(actions[4])
+#         else :
+#             return
+#         iter = iter + 1
+#         return
+ 
 
+    # Map.board.bind('<Key>', key_pressed)
+
+
+        # if key_press == "A" :
+        #     move(actions[1])
+        # if key_press == "S" :
+        #     move(actions[2])
+        # if key_press == "D" :
+        #     move(actions[3])
+        # if key_press == "Space" :
+        #     move(actions[4])
+'''
+'''
 def test_run() :
-    init()
     def time_move(action) :
         move(action)
         time.sleep(0.3)
@@ -253,76 +373,9 @@ def test_run() :
     time_move(actions[0])
     time_move(actions[0])
     time_move(actions[0])
+'''
 
-def restart_check(iter):
-    global alpha, score
-    if Map.restart is True:
-        current = Map.start
-        visited[current[0]][current[1]] += 1
-        #Map.move_bot(current[0], current[1])
-        Map.restart = False
-        Map.restart_game()
-        alpha = pow(iter, -0.1)
-        score = 1
-
-
-def wait():
-    time.sleep((1.9*Map.w1.get() - 19.9) / -18)
-
-
-def q_learn() :
-    global alpha, discount, current, score, epsilon, episodes, print_states, iter
-
-    iter = 1
-    init()
-
-    while iter <= episodes:
-        # Agent reached a goal/hazard
-        restart_check(iter)
-        wait()
-        epsilon = Map.w2.get()
-        # epsilon = soft_max(current, iter)
-        discount = Map.discount
-        print_states = Map.print_states
-
-        print("Epsilon: ", epsilon)
-        print("Discount: ", discount)
-    
-# def wasd_run():
-#     init()
-#     def key_pressed(event):
-#         if event.char == "W" :
-#             move(actions[0])
-#         elif event.char == "A" :
-#             move(actions[1])
-#         elif event.char == "S" :
-#             move(actions[2])
-#         elif event.char == "D" :
-#             move(actions[3])
-#         elif event.char == " " :
-#             move(actions[4])
-#         else :
-#             return
-#         iter = iter + 1
-#         return
-        
-
-    # Map.board.bind('<Key>', key_pressed)
-
-
-        # if key_press == "A" :
-        #     move(actions[1])
-        # if key_press == "S" :
-        #     move(actions[2])
-        # if key_press == "D" :
-        #     move(actions[3])
-        # if key_press == "Space" :
-        #     move(actions[4])
-
-
-#t = threading.Thread(target=q_learn)
-#t = threading.Thread(target=test_run)
-t = threading.Thread(target=random_run)
+t = threading.Thread(target=q_learn)
 t.daemon = True
 t.start()
 Map.begin()
