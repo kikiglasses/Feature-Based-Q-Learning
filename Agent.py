@@ -67,13 +67,13 @@ def get_num_adj(x,y):
 
 def goal_dist(x,y):
     # return the Manhattan distance from the closest goal
-    min_dist = -1
+    min_dist = pow(Map.x+Map.y,2)
     for goal in goals:
         (goal_x, goal_y) = goal
         dist = abs(goal_x - x) + abs(goal_y - y)
-        if (dist < min_dist or min_dist == -1):
+        if (dist < min_dist):
             min_dist = dist
-    return min_dist
+    return inverse_square(min_dist)
 
 
     ### Feature changed - add to write-up
@@ -96,17 +96,19 @@ def nearby_haz_count(x,y):
 def num_haz():
     return len(list(Map.hazards.keys()))
 
+def inverse_square(num) :
+    return 1/(pow(num,2))
 
 def activ_dist(x,y):
     # return Manhattan distance of closest unactivated activator
-    min_dist = -1
+    min_dist = pow(Map.x+Map.y,2)
     for k,v in Map.activs.items():
         for activ in v:
             (activ_x, activ_y) = activ
             dist = abs(activ_x - x) + abs(activ_y - y)
-            if (dist < min_dist or min_dist == -1):
+            if (dist < min_dist):
                 min_dist = dist
-    return min_dist
+    return inverse_square(min_dist)
 
 
 def num_unact_channels():      ### slight change from initial proposal
