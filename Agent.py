@@ -70,28 +70,26 @@ def goal_dist(x,y):
     min_dist = -1
     for goal in goals:
         (goal_x, goal_y) = goal
-        temp = abs(goal_x - x) + abs(goal_y - y)
-        if (temp < min_dist or min_dist == -1):
-            min_dist = temp
+        dist = abs(goal_x - x) + abs(goal_y - y)
+        if (dist < min_dist or min_dist == -1):
+            min_dist = dist
     return min_dist
 
 
-# Removed goal_direction as it is captured by goal_dist()
-
-def haz_one_away(location):
-    pass
-
-def haz_two_away(location):
-    # return the Manhattan distance from the nearest hazard
-    min_dist = -1
+    ### Feature changed - add to write-up
+def nearby_haz_count(x,y):
+    # return number of hazards within 1 and tiles (Manhattan distance)
+    count1 = 0  # number of hazards 1 away
+    count2 = 0  # number of hazards 2 away
     for k,v in Map.hazards.items() :
         (hazard_x, hazard_y) = v[Map.hazard_ind[k]]
-        temp = abs(hazard_x - x) + abs(hazard_y - y)
-        if (temp < min_dist or min_dist == -1):
-            min_dist = temp
-    if (min_dist > 2 or min_dist == -1):
-        return 0
-    return 1
+        dist = abs(hazard_x - x) + abs(hazard_y - y)
+        if (dist <= 1):
+            count1 += 1
+            count2 += 1
+        elif (dist <= 2):
+            count2 += 1
+    return (0, count1, count2)
 
 
 # Maybe not a very useful feature
@@ -105,9 +103,9 @@ def activ_dist(x,y):
     for k,v in Map.activs.items():
         for activ in v:
             (activ_x, activ_y) = activ
-            temp = abs(activ_x - x) + abs(activ_y - y)
-            if (temp < min_dist or min_dist == -1):
-                min_dist = temp
+            dist = abs(activ_x - x) + abs(activ_y - y)
+            if (dist < min_dist or min_dist == -1):
+                min_dist = dist
     return min_dist
 
 
@@ -117,11 +115,12 @@ def num_unact_channels():      ### slight change from initial proposal
 
 
 def get_features(x,y) :
+    haz_count = nearby_haz_count(x,y)
     feature_vector =  np.array([1,
         get_num_adj(x,y),
         goal_dist(x,y),
-        haz_dist(x,y),
-        num_haz(),
+        haz_count[1],
+        haz_count[2],
         activ_dist(x,y),
         num_unact_channels()])
     return feature_vector
