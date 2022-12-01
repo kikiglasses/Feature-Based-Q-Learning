@@ -26,7 +26,7 @@ print_states = Map.print_states
 learning_rate = 0.01
 score = 1
 epsilon = 0.5
-episodes = 1000
+episodes = 10000
 steps = 300
 
 
@@ -220,7 +220,7 @@ def reward(x,y):
         r += -100
     elif str(grid[y][x]) == '5':
         r += 150
-    r += -1
+    r += -5 * visited[x][y]
     return r
 
 
