@@ -14,3 +14,8 @@ problems where the most effective or even only possible solutions require the ag
 with or avoid changeable obstacles. We have considered mobile obstacles which move in a pre-
 dictable or probabilistic pattern, objects which may change state such as impassable/passable,
 or objects which may be collected for specific purposes such as keys.
+
+References:
+Adapted source code from 
+Nitish Gupta (2022), GitHub Repository, (Source Code), Available at:
+https://github.com/nitesh4146/Treasure-Hunters-Inc
