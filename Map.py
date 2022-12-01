@@ -74,7 +74,7 @@ else:
 
     grid = [['0' for row in range(x)] for col in range(y)]
     item_grid = [[0 for row in grid[0]] for col in grid]
-  
+
 
     var = StringVar(master)
     var.set("Select item")

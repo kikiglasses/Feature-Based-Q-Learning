@@ -71,7 +71,9 @@ def goal_dist(x,y):
     return inverse_square(min_dist)
 
 def just_visited(x,y) :
-    return (1 if (x,y) == last else 0)
+    global last
+    return visited[y][x]
+    # return 1 if (x,y) == last else 0
 
 # def goal_dist_bfs(x,y):
 #     explored_cells = [(x, y, 0)]
@@ -106,7 +108,7 @@ def num_haz():
     return len(list(Map.hazards.keys()))
 
 def inverse_square(num) :
-    return 1/(pow(num + 0.1,2))
+    return 1/(1+num)#(pow(num + 0.1,2))
 
 
 def activ_dist(x,y):
@@ -162,7 +164,9 @@ def get_legal_moves(x,y):
 
 def move(action):
     global current, score, last, visited
+    # if action != actions[4]:
     last = current
+
     (curr_x, curr_y) = current
 
     ### Checks move is valid for map
@@ -232,14 +236,11 @@ def restart_check(iter):
         Map.restart_game()
         score = 1
 
-
 def wait():
     time.sleep((1.9*Map.w1.get() - 19.9) / -18)
 
-
 def get_q(s,w) :
     return np.dot(w.T,s)
-
 
 def reward(x,y):
     global last, visited
@@ -249,18 +250,18 @@ def reward(x,y):
     if str(grid[y][x]) == '3':
         r += 100
     elif str(grid[y][x]) == '4':
-        r += -100
-    elif str(grid[y][x]) == '5':
+        r += -50
+    elif str(grid[y][x]) == '5' and '6' in grid:
         r += 150
     (last_x,last_y) = last
     lm = get_legal_moves(last_x, last_y)
-    print(visited)
     for (x1,y1) in lm :
         count += visited[y1][x1]
-    if visited[last_y][last_x] > count/len(lm) :
-        r+= -1
+    if visited[y][x] > count/len(lm) :
+        r+= -  visited[y][x] / count
     else:
-        r+=1
+        r+= visited[y][x] / count
+    print ("reward: ", r)
     return r
 
 
@@ -270,7 +271,7 @@ def q_learn() :
     iter = 1
     moves = 0
 
-    Map.restart_game()
+    # Map.restart_game()
     while iter <= episodes:
         if Map.flag is None:
             quit()
@@ -280,7 +281,7 @@ def q_learn() :
         restart_check(iter)
         wait()
         epsilon = Map.w2.get()
-        print("epsilon:", epsilon)
+
         # epsilon = soft_max(current, iter)
         discount = Map.discount
         print_states = Map.print_states
@@ -326,8 +327,10 @@ def q_learn() :
                 max_q = get_q(si,w)
 
        # print(reward(current[0], current[1]))
-        w += (learning_rate * (reward(current[0], current[1]) + discount * max_q - selected_q[2])) * s 
+        # w += (learning_rate * (reward(current[0], current[1]) + discount * max_q - selected_q[2])) * s 
+        w += (learning_rate * (reward(current[0], current[1]) + discount *get_q(s,w) - selected_q[2])) * s 
         # print(w)
+
         # print(s)
         iter += 1
         moves +=1
