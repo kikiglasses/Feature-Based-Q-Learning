@@ -70,24 +70,26 @@ def goal_dist(x,y):
     min_dist = -1
     for goal in goals:
         (goal_x, goal_y) = goal
-        temp = abs(goal_x - x) + abs(goal_y - y)
-        if (temp < min_dist or min_dist == -1):
-            min_dist = temp
+        dist = abs(goal_x - x) + abs(goal_y - y)
+        if (dist < min_dist or min_dist == -1):
+            min_dist = dist
     return min_dist
 
 
-# Removed goal_direction as it is captured by goal_dist()
-def haz_dist(x,y):
-    # return the Manhattan distance from the nearest hazard
-    min_dist = -1
+    ### Feature changed - add to write-up
+def nearby_haz_count(x,y):
+    # return number of hazards within 1 and tiles (Manhattan distance)
+    count1 = 0  # number of hazards 1 away
+    count2 = 0  # number of hazards 2 away
     for k,v in Map.hazards.items() :
         (hazard_x, hazard_y) = v[Map.hazard_ind[k]]
-        temp = abs(hazard_x - x) + abs(hazard_y - y)
-        if (temp < min_dist or min_dist == -1):
-            min_dist = temp
-    if (min_dist < 2 or min_dist == -1):
-        return 0
-    return min_dist
+        dist = abs(hazard_x - x) + abs(hazard_y - y)
+        if (dist <= 1):
+            count1 += 1
+            count2 += 1
+        elif (dist <= 2):
+            count2 += 1
+    return (0, count1, count2)
 
 
 # Maybe not a very useful feature
@@ -101,9 +103,9 @@ def activ_dist(x,y):
     for k,v in Map.activs.items():
         for activ in v:
             (activ_x, activ_y) = activ
-            temp = abs(activ_x - x) + abs(activ_y - y)
-            if (temp < min_dist or min_dist == -1):
-                min_dist = temp
+            dist = abs(activ_x - x) + abs(activ_y - y)
+            if (dist < min_dist or min_dist == -1):
+                min_dist = dist
     return min_dist
 
 
@@ -113,11 +115,12 @@ def num_unact_channels():      ### slight change from initial proposal
 
 
 def get_features(x,y) :
+    haz_count = nearby_haz_count(x,y)
     feature_vector =  np.array([1,
         get_num_adj(x,y),
         goal_dist(x,y),
-        haz_dist(x,y),
-        num_haz(),
+        haz_count[1],
+        haz_count[2],
         activ_dist(x,y),
         num_unact_channels()])
     return feature_vector
@@ -125,22 +128,23 @@ def get_features(x,y) :
 
 def get_legal_moves(x,y):
     legal_moves = []
+    # Add deactivatable walls to walls
+    temp = walls.copy()
+    for arr in Map.deactivs.values():
+        temp.append(arr)
+    # Check if move would take into a wall
     if x + 1 < Map.x : #check right
-        if (x + 1, y) not in walls :
-            if (x + 1, y) not in list(Map.deactivs.values()) :
-                legal_moves.append((x+1, y))
+        if (x + 1, y) not in temp :
+            legal_moves.append((x+1, y))
     if x - 1 >= 0 : #check left
-        if (x - 1, y) not in walls :
-            if (x - 1, y) not in list(Map.deactivs.values()) :
-                legal_moves.append((x-1,y))
+        if (x - 1, y) not in temp :
+            legal_moves.append((x-1,y))
     if y - 1 >= 0 : #check up
-        if (x, y - 1) not in walls :
-            if (x, y - 1) not in list(Map.deactivs.values()) :
-                legal_moves.append((x,y-1))
+        if (x, y - 1) not in temp :
+            legal_moves.append((x,y-1))
     if y + 1 < Map.y : #check left
-        if (x, y + 1) not in walls :
-            if (x, y + 1) not in list(Map.deactivs.values()) :
-                legal_moves.append((x,y+1))
+        if (x, y + 1) not in temp :
+            legal_moves.append((x,y+1))
     return legal_moves
 
 
