@@ -97,7 +97,7 @@ def num_haz():
     return len(list(Map.hazards.keys()))
 
 def inverse_square(num) :
-    return 1/(pow(num,2))
+    return 1/(pow(num + 0.1,2))
 
 def activ_dist(x,y):
     # return Manhattan distance of closest unactivated activator
@@ -213,14 +213,13 @@ def move(action):
 
 
 def restart_check(iter):
-    global alpha, score
+    global alpha, score, current
     if Map.restart is True:
         current = Map.start
         visited[current[0]][current[1]] += 1
         #Map.move_bot(current[0], current[1])
         Map.restart = False
         Map.restart_game()
-        alpha = pow(iter, -0.1)
         score = 1
 
 
@@ -245,7 +244,7 @@ def reward(x,y):
 
 
 def q_learn() :
-    global alpha, discount, current, score, epsilon, episodes, print_states, iter, w
+    global discount, current, score, epsilon, episodes, print_states, iter, w
     
     iter = 1
     moves = 0
@@ -255,7 +254,7 @@ def q_learn() :
         # Agent reached a goal/hazard
         restart_check(iter)
         wait()
-        epsilon = Map.w2.get()
+        # epsilon = Map.w2.get()
         print("epsilon:", epsilon)
         # epsilon = soft_max(current, iter)
         discount = Map.discount
