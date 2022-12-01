@@ -128,22 +128,23 @@ def get_features(x,y) :
 
 def get_legal_moves(x,y):
     legal_moves = []
+    # Add deactivatable walls to walls
+    temp = walls.copy()
+    for arr in Map.deactivs.values():
+        temp.append(arr)
+    # Check if move would take into a wall
     if x + 1 < Map.x : #check right
-        if (x + 1, y) not in walls :
-            if (x + 1, y) not in list(Map.deactivs.values()) :
-                legal_moves.append((x+1, y))
+        if (x + 1, y) not in temp :
+            legal_moves.append((x+1, y))
     if x - 1 >= 0 : #check left
-        if (x - 1, y) not in walls :
-            if (x - 1, y) not in list(Map.deactivs.values()) :
-                legal_moves.append((x-1,y))
+        if (x - 1, y) not in temp :
+            legal_moves.append((x-1,y))
     if y - 1 >= 0 : #check up
-        if (x, y - 1) not in walls :
-            if (x, y - 1) not in list(Map.deactivs.values()) :
-                legal_moves.append((x,y-1))
+        if (x, y - 1) not in temp :
+            legal_moves.append((x,y-1))
     if y + 1 < Map.y : #check left
-        if (x, y + 1) not in walls :
-            if (x, y + 1) not in list(Map.deactivs.values()) :
-                legal_moves.append((x,y+1))
+        if (x, y + 1) not in temp :
+            legal_moves.append((x,y+1))
     return legal_moves
 
 
