@@ -239,8 +239,8 @@ def reward(x,y):
     elif str(grid[y][x]) == '4':
         r += -100
     elif str(grid[y][x]) == '5':
-        r += 20
-    r += -1
+        r += 50
+    r += -5
     return r
 
 
