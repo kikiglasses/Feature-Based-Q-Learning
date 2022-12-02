@@ -42,13 +42,11 @@ s = np.array([1, #State vector
                 0,
                 0,
                 0,
-                0,
                 0], dtype=float)
 
 w = np.array([1, #State vector
                 10,
                 -2,
-                -1,
                 5,
                 1,
                 -1], dtype=float)
@@ -109,7 +107,7 @@ def num_haz():
     return len(list(Map.hazards.keys()))
 
 def inverse_square(num) :
-    return 1/(1+num)#(pow(num + 0.1,2))
+    return 1/(pow(num + 1,2))
 
 
 def activ_dist(x,y):
@@ -123,6 +121,15 @@ def activ_dist(x,y):
                 min_dist = dist
     return inverse_square(min_dist)
 
+def hazard_dist(x,y):
+    # return Manhattan distance of closest unactivated activator
+    min_dist = pow(Map.x+Map.y,2)
+    for k,v in Map.hazards.items():
+        (hazard_x, hazard_y) = v[Map.hazard_ind[k]]
+        dist = abs(hazard_x - x) + abs(hazard_y - y)
+        if (dist < min_dist) :
+            min_dist = dist
+    return inverse_square(min_dist)
 
 def num_unact_channels():      ### slight change from initial proposal
     # return number of channels yet to be activated
@@ -133,8 +140,7 @@ def get_features(x,y) :
     haz_count = nearby_haz_count(x,y)
     feature_vector =  np.array([1,
         goal_dist(x,y),
-        haz_count[1],
-        haz_count[2],
+        hazard_dist(x,y),
         activ_dist(x,y),
         num_unact_channels(),
         just_visited(x,y)])
@@ -220,7 +226,6 @@ def restart_check(iter):
     if Map.restart is True:
         current = Map.start
         visited[current[0]][current[1]] += 1
-        Map.move_bot(current[0], current[1])
         Map.restart = False
         Map.restart_game()
         score = 1
@@ -235,12 +240,14 @@ def reward(x,y):
     global last, visited
     r = 0
     count = 0
-    if str(grid[y][x]) == '3':
+    if (x,y) in goals :
         r += 100
-    elif str(grid[y][x]) == '4':
-        r += -50
-    elif str(grid[y][x]) == '5' and '6' in grid:
-        r += 150
+    for k,v in Map.hazards.items():
+        if (x,y) == v[Map.hazard_ind[k]]:
+            r += -20
+    for k,v in Map.activs.items():
+        if (x,y) in v :
+            r += 150
     (last_x,last_y) = last
     lm = get_legal_moves(last_x, last_y)
     for (x1,y1) in lm :
@@ -249,7 +256,7 @@ def reward(x,y):
         r+= -  visited[y][x] / count
     else:
         r+= visited[y][x] / count
-    print ("reward: ", r)
+    # print ("reward: ", r)
     return r
 
 
@@ -261,12 +268,12 @@ def q_learn() :
 
     # Map.restart_game()
     while iter <= episodes:
+        restart_check(iter)
         if Map.flag is None:
             quit()
         if Map.flag is True:
             continue
         # Agent reached a goal/hazard
-        restart_check(iter)
         wait()
         epsilon = Map.w2.get()
         # epsilon = soft_max(current, iter)
@@ -282,7 +289,7 @@ def q_learn() :
 
         selected_q = (0,0,0)
         if r < epsilon:
-            r = random.randint(0, len(q)-1)
+            r = random.randint(1, len(q)-1)
             selected_q = q[r]
 
         else:
@@ -313,11 +320,11 @@ def q_learn() :
                 max_q = get_q(si,w)
 
        # print(reward(current[0], current[1]))
-        # w += (learning_rate * (reward(current[0], current[1]) + discount * max_q - selected_q[2])) * s 
-        w += (learning_rate * (reward(current[0], current[1]) + discount *get_q(s,w) - selected_q[2])) * s 
-        # print(w)
+        w += (learning_rate * (reward(current[0], current[1]) + discount * max_q - selected_q[2])) * s 
+        # w += (learning_rate * (reward(current[0], current[1]) + discount *get_q(s,w) - selected_q[2])) * s 
+        print(w)
 
-        # print(s)
+        print(s)
         iter += 1
         moves +=1
 
@@ -427,7 +434,7 @@ def test_run() :
     time_move(actions[3])
 
 
-t = threading.Thread(target=random_run)
+t = threading.Thread(target=q_learn)
 t.daemon = True
 t.start()
 Map.begin()

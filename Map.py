@@ -29,7 +29,6 @@ agent_pic = ImageTk.PhotoImage(image=Image.open(path+'steve1.png'))
 activ_pic = ImageTk.PhotoImage(image=Image.open(path+'lever1.png'))
 deactiv_pic = ImageTk.PhotoImage(image=Image.open(path+'trapdoor1.png'))
 
-
 triangle_size = 0.3
 text_offset = 17
 cell_score_min = -0.2
@@ -242,11 +241,8 @@ def visualize_grid():
         for (i,j) in d:
             item_grid[i][j] = board.create_image(i*Width+Width/2, j*Width+Width/2, image=deactiv_pic)
 
-
-
-
 def move_bot(new_x, new_y):
-    global player, x, y, score, walk_reward, robot, restart
+    global player, x, y, walk_reward, robot, restart
     if (new_x >= 0) and (new_x < x) and (new_y >= 0) and (new_y < y) and not ((new_x, new_y) in walls):
         board.coords(robot, new_x*Width+Width/2, new_y*Width+Width/2)
         player = (new_x, new_y)
@@ -254,19 +250,18 @@ def move_bot(new_x, new_y):
     # Check for goal or hazard
     if player in goals:
         restart = True
-        print("Success score = ", score)
+        print("Success")
         return
     for k,v in hazards.items():
-        print("current: ", player, ", hazard: ", v[hazard_ind[k]])
+        # print("current: ", player, ", hazard: ", v[hazard_ind[k]])
         if player == v[hazard_ind[k]]:
             restart = True
-            print("Fail score = ", score)
+            print("Fail")
             return
     
 def move_hazards():
-    global player, score, robot, restart, activs, deactivs, xactivs, xdeactivs, hazards
+    global player, score, robot, restart, activs, deactivs, xactivs, xdeactivs, hazards, hazard_ind, hazard_dir
     for k,v in hazards.items():
-
         # Gets current location and next location
         (curr_x, curr_y) = v[hazard_ind[k]]
         (new_x, new_y) = v[hazard_ind[k] + hazard_dir[k]]
@@ -285,8 +280,8 @@ def move_hazards():
         board.delete(item_grid[curr_x][curr_y])
         item_grid[curr_x][curr_y] = 0
 
-        grid[curr_x][curr_y] = '0'
-        grid[new_x][new_y] = '4'
+        grid[curr_y][curr_x] = '0'
+        grid[new_y][new_x] = '4'
 
 def restart_game():
     global player, score, robot, restart, activs, deactivs, xactivs, xdeactivs, hazards, hazard_ind, hazard_dir, item_grid, grid
@@ -315,10 +310,11 @@ def restart_game():
         
         # Modify the grid to show changes
         item_grid[new_x][new_y] = board.create_image(new_x*Width+Width/2, new_y*Width+Width/2, image=hazard_pic)
-        print(item_grid[0][1])
+        print(item_grid[curr_x][curr_y])
         board.delete(item_grid[curr_x][curr_y])
-        print(item_grid[0][1])
+        print(item_grid[curr_x][curr_y])
         item_grid[curr_x][curr_y] = 0
+        print(item_grid[curr_x][curr_y])
 
         grid[curr_x][curr_y] = '0'
         grid[new_x][new_y] = '4'
