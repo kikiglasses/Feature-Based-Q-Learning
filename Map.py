@@ -180,6 +180,7 @@ for i in range(y):
             walls.append((j, i))
         elif grid[i][j] == "2":
             start = (j, i)
+            last = start
         elif grid[i][j] == "3":
             goals.append((j, i))
 
@@ -246,7 +247,7 @@ def visualize_grid():
 
 
 def move_bot(new_x, new_y):
-    global player, x, y, walk_reward, robot, restart
+    global player, x, y, walk_reward, robot, restart, last
     if (new_x >= 0) and (new_x < x) and (new_y >= 0) and (new_y < y) and not ((new_x, new_y) in walls):
         board.coords(robot, new_x*Width+Width/2, new_y*Width+Width/2)
         player = (new_x, new_y)
@@ -254,29 +255,28 @@ def move_bot(new_x, new_y):
     # Check for goal or hazard
     if player in goals:
         restart = True
-        return
     for k,v in hazards.items():
         print("current: ", player, ", hazard: ", v[hazard_ind[k]])
-        if player == v[hazard_ind[k]]:
+        if (player == v[hazard_ind[k]]) or ((player == v[hazard_ind[k] - hazard_dir[k]]) and (v[hazard_ind[k]] == last)):
             restart = True
-            return
+    last = player
     
 def move_hazards():
     global player, score, robot, restart, activs, deactivs, xactivs, xdeactivs, hazards
     for k,v in hazards.items():
-
-        # Gets current location and next location
-        (curr_x, curr_y) = v[hazard_ind[k]]
-        (new_x, new_y) = v[hazard_ind[k] + hazard_dir[k]]
-
-        # Increments hazard index in correct direction
-        hazard_ind[k] = hazard_ind[k] + hazard_dir[k]
 
         # If the hazard is at either end of its list of locations, change direction
         if hazard_ind[k] + 1  == len(hazards[k]) :
             hazard_dir[k] = -1
         elif hazard_ind[k] == 0 :
             hazard_dir[k] = 1
+        
+        # Gets current location and next location
+        (curr_x, curr_y) = v[hazard_ind[k]]
+        (new_x, new_y) = v[hazard_ind[k] + hazard_dir[k]]
+
+        # Increments hazard index in correct direction
+        hazard_ind[k] = hazard_ind[k] + hazard_dir[k]
         
         # Modify the grid to show changes
         item_grid[new_x][new_y] = board.create_image(new_x*Width+Width/2, new_y*Width+Width/2, image=hazard_pic)
