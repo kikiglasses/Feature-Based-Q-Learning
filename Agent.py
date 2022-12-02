@@ -225,6 +225,7 @@ def restart_check(iter):
     global alpha, score, current, visited
     if Map.restart is True:
         current = Map.start
+        visited = [[0 for row in range(Map.x)] for col in range(Map.y)]
         visited[current[0]][current[1]] += 1
         Map.restart = False
         Map.restart_game()
