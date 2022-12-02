@@ -29,14 +29,10 @@ agent_pic = ImageTk.PhotoImage(image=Image.open(path+'steve1.png'))
 activ_pic = ImageTk.PhotoImage(image=Image.open(path+'lever1.png'))
 deactiv_pic = ImageTk.PhotoImage(image=Image.open(path+'trapdoor1.png'))
 
-triangle_size = 0.3
-text_offset = 17
-cell_score_min = -0.2
-cell_score_max = 0.2
 Width = 48
 actions = ["up", "left", "down", "right", "wait"]
-print_states = False
 
+# Read map from file
 if not result:
     filename = askopenfilename(title="Select map file")
     print(filename)
@@ -46,11 +42,13 @@ if not result:
     ins = open(filename, "r")
     for line in ins:
         number_strings = line.split()
-        #print(number_strings)
         grid.append(number_strings)
     (x, y) = (len(grid[0]), len(grid))
     board = Canvas(master, width=x*Width, height=y*Width)
     item_grid = [[0 for row in grid[0]] for col in grid]
+
+# Create new map file
+# Not completed
 else:
     x_str = simpledialog.askstring('Size', 'Enter grid size')
     if x_str == None:
@@ -58,7 +56,6 @@ else:
         quit()
     x = int(x_str)
     (x, y) = (x, x)
-
 
     board = Canvas(master, width=x*Width, height=y*Width)
     start_count = 0
@@ -74,7 +71,6 @@ else:
     grid = [['0' for row in range(x)] for col in range(y)]
     item_grid = [[0 for row in grid[0]] for col in grid]
 
-
     var = StringVar(master)
     var.set("Select item")
 
@@ -85,6 +81,7 @@ else:
 
 
     '''
+    Key to grid representation:
     0 = empty
     1 = wall
     2 = start
@@ -167,10 +164,10 @@ goals = []
 hazards = {}    # "Channel" : [line of ordered locations]
 hazard_ind = {} # "Channel" : current index
 hazard_dir = {} # "Channel" : current direction (forwards/backwards)
-activs = {}
-xactivs = {} # Dictionary of activators that have been activated in the current run
-deactivs = {}
-xdeactivs = {}
+activs = {}     # "Channel" : [list of activators on this channel]
+xactivs = {}    # Dictionary of activators that have been activated in the current run
+deactivs = {}   # "Channel" : [list of deactivatables on this channel]
+xdeactivs = {}  # Dictionary of deactivatables that have been deactivated in the current run
 
 # Add each type from grid list to its own list
 for i in range(y):
@@ -212,22 +209,16 @@ for i in range(y):
             grid[i][j] = '6'
 
 player = start
-tri_objects = {}
-text_objects = {}
 flag = True
 restart = False
 
 # Displays grid and displays specials as images
 def visualize_grid():
     global specials, walls, Width, x, y, player
-    #print ("activs: ", list(activs.values()))
-    print(grid)
-    print(item_grid)
     for i in range(x):
         for j in range(y):
             board.create_rectangle(
                 i*Width, j*Width, (i+1)*Width, (j+1)*Width, fill="white", width=1)
-    #print(hazards)
     for k,v in hazards.items(): # Move to player update function
         (i,j) = v[0]
         item_grid[i][j] = board.create_image(i*Width+Width/2, j*Width+Width/2, image=hazard_pic)
@@ -248,15 +239,16 @@ def move_bot(new_x, new_y):
         board.coords(robot, new_x*Width+Width/2, new_y*Width+Width/2)
         player = (new_x, new_y)
     move_hazards()
-    # Check for goal or hazard
+    # Check for goal or hazard to restart
     if player in goals:
         restart = True
+        print('\n******Success******')
     for k,v in hazards.items():
-        print("current: ", player, ", hazard: ", v[hazard_ind[k]])
         if (player == v[hazard_ind[k]]) or ((player == v[hazard_ind[k] - hazard_dir[k]]) and (v[hazard_ind[k]] == last)):
             restart = True
+            print('\n******Failure******')
     last = player
-    
+
 def move_hazards():
     global player, score, robot, restart, activs, deactivs, xactivs, xdeactivs, hazards, hazard_ind, hazard_dir
     for k,v in hazards.items():
@@ -309,19 +301,15 @@ def restart_game():
         
         # Modify the grid to show changes
         item_grid[new_x][new_y] = board.create_image(new_x*Width+Width/2, new_y*Width+Width/2, image=hazard_pic)
-        print(item_grid[curr_x][curr_y])
         board.delete(item_grid[curr_x][curr_y])
-        print(item_grid[curr_x][curr_y])
         item_grid[curr_x][curr_y] = 0
-        print(item_grid[curr_x][curr_y])
 
         grid[curr_x][curr_y] = '0'
         grid[new_x][new_y] = '4'
 
 
 visualize_grid()
-robot = board.create_image(
-    start[0]*Width+Width/2, start[1]*Width+Width/2, image=agent_pic)
+robot = board.create_image(start[0]*Width+Width/2, start[1]*Width+Width/2, image=agent_pic)
 
 board.pack(side=LEFT)
 
@@ -336,8 +324,6 @@ q1frame.pack()
 b1 = Button(text="Play / Pause")
 
 rb = Button(text="Restart")
-
-
 
 def printName(event):
     global flag
@@ -418,26 +404,6 @@ w2.set(0.25)
 w2.pack()
 Label(text="Epsilon").pack()
 Label(text="").pack()
-
-
-def printStates(event):
-    global print_states
-    
-    if print_states:
-        print_states = False
-    else:
-        print_states = True
-
-# Toggle Print States Button
-'''
-q5frame = Frame(master)
-q5frame.pack()
-
-b5 = Button(q5frame, text="Toggle Print States")
-b5.bind("<Button-1>", printStates)
-b5.pack(side=LEFT)
-Label(text="").pack()
-'''
 
 def begin():
     global flag
