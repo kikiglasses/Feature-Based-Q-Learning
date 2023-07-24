@@ -1,5 +1,5 @@
 # Reinforcement Learning in Dynamic Grid Worlds
-Intelligent Robotics Module Final Project @University of Birmingham
+Intelligent Robotics Module Final Group Project @University of Birmingham
 
 Harry Clemence, Kai Meller, Jack Mortimer, Shankari Venkatesh
 
