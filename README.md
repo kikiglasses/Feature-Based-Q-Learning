@@ -1,10 +1,7 @@
 # Reinforcement Learning in Dynamic Grid Worlds
 Intelligent Robotics Module Final Project @University of Birmingham
 
-
-Harry Clemence, Kai Meller,
-Jack Mortimer, Shankari Venkatesh
-November 2022
+Harry Clemence, Kai Meller, Jack Mortimer, Shankari Venkatesh
 
 The robot is placed in an interactive grid world maze which contains puzzles and obstacles
 to avoid. The robot will begin with no prior knowledge of the environment or how it should
